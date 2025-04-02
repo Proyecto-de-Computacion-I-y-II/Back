@@ -138,4 +138,22 @@ public function getTopSellers()
 
     return response()->json($topSellers);
 }
+
+public function getMaxValues()
+{
+    $maxValues = Producto::selectRaw('
+            MAX(precio) as precio,
+            MAX(grasas) as grasas,
+            MAX(acidos_grasos) as acidos_grasos,
+            MAX(fibra) as fibra,
+            MAX(hidratos_carbono) as hidratos_carbono,
+            MAX(azucares) as azucares,
+            MAX(sal) as sal,
+            MAX(proteinas) as proteinas
+        ')
+        ->first();
+
+    return response()->json($maxValues);
+}
+
 }
