@@ -10,17 +10,19 @@ use App\Models\Producto;
 
 class Cesta_Compra_Controller extends Controller
 {
+    //Sobra
     public function getAll()
     {
         $cestas = Cesta_Compra::all();
         return response()->json($cestas,200);
     }
 
-    public function getById(Cesta_Compra $id)
-    {
+    //Revisar que el valor que devuelva, lo devuelva con los productos asociados cargados y valida que el id recibido exista
+    public function getById(Cesta_Compra $id) {
         return $id;
     }
 
+    //Sobra, integrar en getById
     public function getProdFromCesta(Cesta_Compra $cesta)
     {
         $cesta->load('productos');
@@ -31,15 +33,22 @@ class Cesta_Compra_Controller extends Controller
         return response()->json($cesta->productos,200);
     }
 
-    public function store(Request $req)
-    {
-        
-        $cestaValidada = $req->validate([
+    //Revisar que se valide el ID_user que exista. Sol: required ya busca que la foreign key exista. No hay que cambiar
+    public function store(Request $req) {
+        $validator = Validator::make($req->all(), [
             'ID_user' => 'required|integer|min:1',
             'fecha_compra' => 'required|date'
         ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Datos de entrada no válidos', 'errors' => $validator->errors()], 422);
+        }
         
-        $cesta = Cesta_Compra::create($cestaValidada);
+
+        $cesta = Cesta_Compra::create([
+            'ID_user' => $req['ID_user'],
+            'fecha_compra' => $req['fecha_compra'],
+        ]);
 
         if (!$cesta) {
             return response()->json(['error' => 'No se pudo crear la cesta de la compra'], 500);
@@ -48,34 +57,39 @@ class Cesta_Compra_Controller extends Controller
         return response()->json($cesta, 201);
     }
 
-    public function storeInCesta(Cesta_Compra $cesta, Request $req)
-    {
+    //Revisar la funcionalidad de que si extiste añadir cantidad o devolver error de que el producto ya existe en canasta
+    public function storeInCesta(Cesta_Compra $cesta, Request $req) {
         $cesta->load('productos');
         if(!$cesta){
             return response()->json(['mensaje'=>'Error: Cesta no encontrada'],404);
         }
-        
-        $validatedProd = $req->validate([
+
+        $validator = Validator::make($req->all(), [
             'ID_prod' => 'required|exists:producto,ID_prod',
             'cantidad' => 'required|integer',
         ]);
 
-        $prod = Producto::find($validatedProd['ID_prod']);
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Datos de entrada no válidos', 'errors' => $validator->errors()], 422);
+        }
+
+        $prod = Producto::find($req->ID_prod);
 
         $pivot = $cesta->productos()->wherePivot('ID_prod', $prod->ID_prod)->first();
 
-        if($pivot){
+        if($pivot) {
             $curr_cant = $pivot->pivot->cantidad;
-            $new_cant = $curr_cant+$validatedProd['cantidad'];
+            $new_cant = $curr_cant+$req->cantidad;
             $cesta->productos()->updateExistingPivot($prod->ID_prod, ['cantidad' => $new_cant]);
-        }else{
-            $cesta->productos()->attach($prod->ID_prod, ['cantidad' => $validatedProd['cantidad']]);
+        } else {
+            $cesta->productos()->attach($prod->ID_prod, ['cantidad' => $req->cantidad]);
         }
 
         $cesta->calcularPorcentajes();
         return response()->json(['mensaje' => 'producto añadido a la cesta correctamente'], 200);
     }
 
+    //Mejor usar este.
     public function updateProdFromCesta(Cesta_Compra $cesta, Request $req)
     {
         $cesta->load('productos');
@@ -110,6 +124,7 @@ class Cesta_Compra_Controller extends Controller
         }
     }
 
+    //Sobra
     public function updateCesta(Request $req, $id)
     {
         $cesta = Cesta_compra::find($id);
@@ -125,9 +140,7 @@ class Cesta_Compra_Controller extends Controller
         return response()->json(["mensaje" => "Cesta actualizada"], 200);
     }
 
-
-    public function deleteCesta(Cesta_Compra $cesta)
-    {
+    public function deleteCesta(Cesta_Compra $cesta) {
         if (!$cesta) {
             return response()->json(['mensaje' => 'Error: Cesta no encontrada'], 404);
         }
@@ -137,9 +150,7 @@ class Cesta_Compra_Controller extends Controller
         return response()->json(['mensaje' => 'Cesta eliminada correctamente'], 200);
     }
 
-
-    public function removeProductoFromCesta(Cesta_Compra $cesta, $productoId)
-    {
+    public function removeProductoFromCesta(Cesta_Compra $cesta, $productoId) {
         if (!$cesta) {
             return response()->json(['mensaje' => 'Error: Cesta no encontrada'], 404);
         }
@@ -155,17 +166,19 @@ class Cesta_Compra_Controller extends Controller
         return response()->json(['mensaje' => 'producto eliminado correctamente de la cesta'], 200);
     }
 
+    //Revisar si se queda
     public function getHistorialCompras(Request $request)
-{
-    $usuario = $request->user();
-    $compras = Cesta_Compra::where('ID_user', $usuario->ID_user)->get();
+    {
+        $usuario = $request->user();
+        $compras = Cesta_Compra::where('ID_user', $usuario->ID_user)->get();
 
-    foreach ($compras as $compra) {
-        $compra->load('productos');
+        foreach ($compras as $compra) {
+            $compra->load('productos');
+        }
+
+        return response()->json($compras, 200);
     }
 
-    return response()->json($compras, 200);
-}
-
-
+    //Resumen
+    //Falta getCestasByToken
 }
