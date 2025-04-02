@@ -37,27 +37,35 @@ class Supermercado_Controller extends Controller
 
     public function getCategoriaArbol($idSuper)
     {
-        // Obtener productos del supermercado especificado
+        // Obtener productos del supermercado especificado (solo para identificar las categorías relacionadas)
         $productos = DB::table('producto')
-            ->select('producto.ID_prod', 'producto.nombre', 'producto.ID_sub2', 'subcategoria2.ID_sub', 'subcategoria.ID_cat')
+            ->select('producto.ID_sub2', 'subcategoria2.ID_sub', 'subcategoria.ID_cat')
             ->join('subcategoria2', 'producto.ID_sub2', '=', 'subcategoria2.ID_sub2')
             ->join('subcategoria', 'subcategoria2.ID_sub', '=', 'subcategoria.ID_sub')
             ->where('producto.idSuper', $idSuper)
             ->get();
         
-        // Obtener categorías, subcategorías y subcategorías nivel 2
+        // Extraer IDs únicos de categorías, subcategorías y subcategorías nivel 2 de los productos
+        $catIds = $productos->pluck('ID_cat')->unique()->toArray();
+        $subIds = $productos->pluck('ID_sub')->unique()->toArray();
+        $sub2Ids = $productos->pluck('ID_sub2')->unique()->toArray();
+        
+        // Obtener solo las categorías, subcategorías y subcategorías nivel 2 relacionadas con los productos
         $categorias = DB::table('categoria')
             ->select('idCat', 'nombre_categoria')
+            ->whereIn('idCat', $catIds)
             ->get()
             ->keyBy('idCat');
         
         $subcategorias = DB::table('subcategoria')
             ->select('ID_sub', 'ID_cat', 'nombre_subcategoria')
+            ->whereIn('ID_sub', $subIds)
             ->get()
             ->keyBy('ID_sub');
         
         $subcategorias2 = DB::table('subcategoria2')
             ->select('ID_sub2', 'ID_sub', 'nombre_subsubcategoria')
+            ->whereIn('ID_sub2', $sub2Ids)
             ->get()
             ->keyBy('ID_sub2');
         
@@ -88,22 +96,7 @@ class Supermercado_Controller extends Controller
             if ($cat_id && isset($arbol[$cat_id]['subcategorias'][$subcategoria2->ID_sub])) {
                 $arbol[$cat_id]['subcategorias'][$subcategoria2->ID_sub]['subcategorias2'][$sub2_id] = [
                     'id' => $sub2_id,
-                    'nombre' => $subcategoria2->nombre_subsubcategoria,
-                    'productos' => []
-                ];
-            }
-        }
-        
-        // Añadir productos a sus respectivas subcategorías nivel 2
-        foreach ($productos as $producto) {
-            $cat_id = $subcategorias[$producto->ID_sub]->ID_cat ?? null;
-            
-            if ($cat_id && 
-                isset($arbol[$cat_id]['subcategorias'][$producto->ID_sub]['subcategorias2'][$producto->ID_sub2])) {
-                
-                $arbol[$cat_id]['subcategorias'][$producto->ID_sub]['subcategorias2'][$producto->ID_sub2]['productos'][] = [
-                    'id' => $producto->ID_prod,
-                    'nombre' => $producto->nombre
+                    'nombre' => $subcategoria2->nombre_subsubcategoria
                 ];
             }
         }
@@ -122,5 +115,7 @@ class Supermercado_Controller extends Controller
         
         return response()->json($resultado);
     }
+    
+    
     
 }
