@@ -7,15 +7,21 @@ use Illuminate\Http\Request;
 
 class Categoria_Controller extends Controller
 {
-    public function getAll(){
-        $categorias = Categoria::pluck('nombre_categoria');
-        return $categorias;
+    //Revisar que devuelva el json completo, no en pluck
+    public function getAll() {
+        $categorias = Categoria::all();
+        return response()->json($categorias);
     }
 
-    public function getCategoria(Categoria $id){
-            return $id;
+    public function getCategoria($id){
+        $categoria = Categoria::find($id);
+        
+        if (!$categoria) {
+            return response()->json(['error' => 'Categoríax no encontrada'], 404);
+        }
+    
+        return response()->json($categoria, 200);
     }
-
 
 
 }

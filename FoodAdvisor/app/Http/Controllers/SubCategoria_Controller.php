@@ -7,12 +7,24 @@ use Illuminate\Http\Request;
 
 class SubCategoria_Controller extends Controller
 {
-    public function getAll(){
-        $categorias = Subcategoria::pluck('nombre_subcategoria');
-        return $categorias;
+    //Revisar que devuelva el json completo, no en pluck
+    public function getAll() {
+        $categorias = Subcategoria::all();
+        return response()->json($categorias);
     }
 
-    public function getSubCategoria(Subcategoria $id){
-            return $id;
+    //Sobra
+    public function getSubCategoria($id){
+        $categoria = Subcategoria::find($id);
+        
+        if (!$categoria) {
+            return response()->json(['error' => 'Subcategoría no encontrada'], 404);
+        }
+    
+        return response()->json($categoria, 200);
     }
+    
+
+    //Resumen
+    //Falta createSubcategory
 }
