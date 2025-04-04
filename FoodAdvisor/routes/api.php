@@ -23,6 +23,7 @@ Route::get('productos', [Producto_Controller::class, 'getAll']); //Home
 Route::get('productos/valores-max', [Producto_Controller::class, 'getMaxValues']); //Home
 
 Route::get('productos/{id}', [Producto_Controller::class, 'getProducto']); //Info Específica Prod
+Route::get('productos/{id}/super', [Producto_Controller::class, 'getNombreSupermercado']); //Info Específica Prod
 Route::get('productos/productos-sim/{id}', [Producto_Controller::class, 'getSimilares']); //Info Específica Prod
 Route::post('productos/filtrar', [Producto_Controller::class, 'filtrarProductos']); //Home
 Route::post('productos', [Producto_Controller::class, 'postProducto']); //no comprobado

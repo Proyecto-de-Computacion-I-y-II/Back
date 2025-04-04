@@ -156,4 +156,18 @@ public function getMaxValues()
     return response()->json($maxValues);
 }
 
+public function getNombreSupermercado($id)
+{
+    $producto = Producto::with('supermercado')->find($id);
+
+    if (!$producto) {
+        return response()->json(['message' => 'Producto no encontrado'], 404);
+    }
+
+    return response()->json([
+        'supermercado' => $producto->supermercado->nombre_supermercado ?? 'Sin supermercado'
+    ]);
+}
+
+
 }
