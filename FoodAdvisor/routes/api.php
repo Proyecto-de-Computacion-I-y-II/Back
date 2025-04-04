@@ -10,9 +10,10 @@ use App\Http\Controllers\Producto_Controller;
 use App\Http\Controllers\NivelPiramide_Controller;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\EstadisticasProductosController;
-use App\Models\Usuario;
 use Illuminate\Http\Request;
+use App\Models\Usuario;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Hash;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -74,4 +75,4 @@ Route::get('/estadisticas/productos', [EstadisticasProductosController::class, '
 Route::get('/estadisticas/compras', [EstadisticasProductosController::class, 'obtenerEstadisticasCestas']);
 
 //Recomendar productos
-Route::get('/cestas/{id}/recomendar', [Cesta_Compra_Controller::class, 'recomedacion']);
+Route::get('/cestas/{cesta}/recomendar', [Cesta_Compra_Controller::class, 'recomendacion']);
