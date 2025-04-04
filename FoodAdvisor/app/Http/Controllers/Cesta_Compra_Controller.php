@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Cesta_Compra;
 use App\Models\Producto;
+use App\Models\NivelPiramide;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 
 
 class Cesta_Compra_Controller extends Controller
@@ -178,6 +181,120 @@ class Cesta_Compra_Controller extends Controller
 
         return response()->json($compras, 200);
     }
+
+    public function recomendacion(Cesta_Compra $cesta): JsonResponse
+    {
+        // Obtener los Niveles y sus Porcentajes Recomendados desde la BBDD
+        $nivelesPiramide = NivelPiramide::all(); // Obtiene todos los niveles de la tabla
+
+        // Validar si se obtuvieron niveles
+        if ($nivelesPiramide->isEmpty()) {
+            return response()->json([
+                'message' => 'No se encontraron niveles de pirámide definidos en la base de datos.',
+                'recomendaciones' => [],
+            ], 404); // Error porque falta configuración básica
+        }
+
+        // Obtener Productos y Calcular Porcentajes Actuales en la Cesta
+        // Asegúrate de que la relación 'productos' se carga con la cantidad en el pivot
+        $productosEnCesta = $cesta->productos()->withPivot('cantidad')->get();
+        $totalProductos = 0;
+
+        foreach ($productosEnCesta as $producto) {
+            if ($producto && isset($producto->pivot) && isset($producto->pivot->cantidad)) {
+                $totalProductos += $producto->pivot->cantidad;
+            } else {
+                // Log o manejo de error si un producto no tiene información en el pivot
+                Log::error('Error: Producto sin información de pivot en la cesta.', ['producto' => $producto]);
+                return response()->json([
+                    'message' => 'Error al procesar la cesta. Contacte al administrador.',
+                    'recomendaciones' => [],
+                ], 500);
+            }
+        }
+
+        $productosPorNivel = [];
+
+        if ($totalProductos > 0) {
+            $cantidadesPorNivel = $productosEnCesta->groupBy('idNivel')
+                ->map(function ($group) {
+                    $totalNivel = 0;
+                    foreach ($group as $producto) {
+                        if ($producto && isset($producto->pivot) && isset($producto->pivot->cantidad)) {
+                            $totalNivel += $producto->pivot->cantidad;
+                        } else {
+                            // Esto no debería ocurrir si la carga eager loading es correcta
+                            Log::error('Error: Producto sin información de pivot dentro del groupBy.', ['producto' => $producto]);
+                            // Puedes optar por lanzar una excepción o manejarlo de otra manera
+                        }
+                    }
+                    return $totalNivel;
+                });
+
+            foreach ($cantidadesPorNivel as $idNivel => $cantidad) {
+                $productosPorNivel[$idNivel] = ($cantidad / $totalProductos) * 100;
+            }
+        } else {
+            return response()->json([
+                'message' => 'La cesta está vacía. No se pueden generar recomendaciones.',
+                'recomendaciones' => [],
+            ], 200);
+        }
+
+        // Identificar Niveles Deficitarios comparando con la BBDD ---
+        $nivelesDeficitarios = [];
+        // Itera sobre los niveles obtenidos de la base de datos
+        foreach ($nivelesPiramide as $nivel) {
+            // Accede a la clave primaria usando getKey() o directamente si sabes el nombre (idNivel)
+            $idNivelActual = $nivel->idNivel;
+            $porcentajeActual = $productosPorNivel[$idNivelActual] ?? 0;
+
+            // Compara con el mínimo almacenado en la tabla nivelPiramide
+            // Asegúrate que las columnas se llaman 'minimo' y 'maximo'
+            if ($porcentajeActual < $nivel->minimo) {
+                $nivelesDeficitarios[] = $idNivelActual;
+            }
+            // Podrías añadir lógica para niveles con exceso si lo necesitas:
+            // else if ($porcentajeActual > $nivel->maximo) { ... }
+        }
+
+        // Obtener Recomendaciones Aleatorias de los Niveles Deficitarios ---
+        $recomendacionesPorNivel = []; // Array para almacenar recomendaciones por nivel
+        if (!empty($nivelesDeficitarios)) {
+            $idsProductosEnCesta = $productosEnCesta->pluck('ID_prod')->toArray(); // Ajusta 'ID_prod'
+
+            foreach ($nivelesDeficitarios as $nivelId) {
+                $productosRecomendados = Producto::where('idNivel', $nivelId) // Ajusta 'idNivel'
+                    ->whereNotIn('ID_prod', $idsProductosEnCesta) // Ajusta 'ID_prod'
+                    ->inRandomOrder()
+                    ->take(4)
+                    ->select(['ID_prod', 'nombre', 'precio', 'imagen', 'idNivel']) // Ajusta campos
+                    ->get();
+
+                if (!$productosRecomendados->isEmpty()) {
+                    $recomendacionesPorNivel[$nivelId] = $productosRecomendados;
+                }
+            }
+        }
+
+        // Devolver Respuesta JSON ---
+        if (empty($recomendacionesPorNivel) && !empty($nivelesDeficitarios)) {
+            return response()->json([
+                'message' => 'No se encontraron productos adicionales para recomendar en los niveles deficitarios.',
+                'recomendaciones' => [],
+            ]);
+        } elseif (empty($recomendacionesPorNivel) && empty($nivelesDeficitarios)) {
+            return response()->json([
+                'message' => '¡Tu cesta cumple con los porcentajes recomendados!',
+                'recomendaciones' => [],
+            ]);
+        } else {
+            return response()->json([
+                'recomendaciones' => $recomendacionesPorNivel,
+            ]);
+        }
+    }
+
 
     //Resumen
     //Falta getCestasByToken

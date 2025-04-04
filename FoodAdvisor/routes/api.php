@@ -73,4 +73,4 @@ Route::get('/estadisticas/productos', [EstadisticasProductosController::class, '
 Route::get('/estadisticas/compras', [EstadisticasProductosController::class, 'obtenerEstadisticasCestas']);
 
 //Recomendar productos
-Route::get('/cestas/{id}/recomendar', [Cesta_Compra_Controller::class, 'recomedacion']);
+Route::get('/cestas/{cesta}/recomendar', [Cesta_Compra_Controller::class, 'recomendacion']);
