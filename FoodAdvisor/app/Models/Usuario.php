@@ -4,13 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Notifications\Notifiable;
-use Tymon\JWTAuth\Contracts\JWTSubject;
-class Usuario extends Model implements JWTSubject
+
+class Usuario extends Model
 {
-    use SoftDeletes, HasApiTokens, Notifiable;
-    
+    use SoftDeletes;
     
     protected $table = 'usuario';
     protected $primaryKey = 'ID_user';
@@ -19,16 +16,5 @@ class Usuario extends Model implements JWTSubject
     public function cestas()
     {
         return $this->hasMany(Cesta_Compra::class, 'ID_user', 'ID_user');
-    }
-
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
-    public function getJWTCustomClaims()
-    {
-
-        return [];
     }
 }

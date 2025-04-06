@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
-use Tymon\JWTAuth\Facades\JWTAuth;
+
 class UsuarioController extends Controller
 {
     public function getRol($id)
@@ -101,15 +101,9 @@ class UsuarioController extends Controller
             return response()->json(['message' => 'Credenciales incorrectas'], 401);
         }
 
-        $token = JWTAuth::fromUser($usuario);
-
         return response()->json([
             'mensaje' => 'Inicio de sesión exitoso',
-            'usuario' => [
-                'nombre' => $usuario->nombre,
-                'correo' => $usuario->correo,
-            ],
-            'token' => $token,
+            'usuario' => $usuario
         ], 200);
     }
 

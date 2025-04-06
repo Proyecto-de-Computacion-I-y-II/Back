@@ -10,10 +10,9 @@ use App\Http\Controllers\Producto_Controller;
 use App\Http\Controllers\NivelPiramide_Controller;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\EstadisticasProductosController;
-use Illuminate\Http\Request;
 use App\Models\Usuario;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Hash;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
