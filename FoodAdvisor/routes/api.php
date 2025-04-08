@@ -11,16 +11,15 @@ use App\Http\Controllers\NivelPiramide_Controller;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\EstadisticasProductosController;
 use Illuminate\Http\Request;
-use App\Models\Usuario;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Hash;
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
 
 
-Route::get('productos', [Producto_Controller::class, 'getAll']); //Home
+
+Route::middleware(['auth.jwt'])->group(function () {
+    Route::get('productos', [Producto_Controller::class, 'getAll']); //Home
+});
+
+
 Route::get('productos/{id}', [Producto_Controller::class, 'getProducto']); //Info Específica Prod
 Route::get('productos/productos-sim/{id}', [Producto_Controller::class, 'getSimilares']); //Info Específica Prod
 Route::post('productos/filtrar', [Producto_Controller::class, 'filtrarProductos']); //Home
