@@ -85,12 +85,14 @@ class Producto_Controller extends Controller
 
     // Filtro por nivel de pirámide
     if ($request->has('idNivel')) {
-        $query->where('idNivel', $request->idNivel);
+        $niveles = $request->idNivel; // Suponiendo que 'idsNivel' es un array de IDs de nivel
+        $query->whereIn('idNivel', $niveles);
     }
 
     // Filtro por supermercado
     if ($request->has('idSuper')) {
-        $query->where('idSuper', $request->idSuper);
+        $supermercados = $request->idSuper; // Suponiendo que 'idsSuper' es un array de IDs
+        $query->whereIn('idSuper', $supermercados);
     }
 
     // Filtros por valores nutricionales
@@ -115,7 +117,7 @@ class Producto_Controller extends Controller
                     ELSE 3 END", ["$nombre", "$nombre%"]);  // Ordena por prioridad: 1) coincidencia exacta 2) coincidencia parcial y 3) productos que solo contienen la palabra
     }    
 
-    $producto = $query->paginate(200);   //Paginacion de los resultados (si son muchos no funciona)
+    $producto = $query->paginate(50);   //Paginacion de los resultados (si son muchos no funciona)
 
     return response()->json($producto);
 }
