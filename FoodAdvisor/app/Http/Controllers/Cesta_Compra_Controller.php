@@ -21,6 +21,7 @@ class Cesta_Compra_Controller extends Controller
         return $id;
     }
 
+
     public function getProdFromCesta(Cesta_Compra $cesta)
     {
         $cesta->load('productos');
@@ -30,10 +31,9 @@ class Cesta_Compra_Controller extends Controller
         }
         return response()->json($cesta->productos,200);
     }
-
+    //por arreglar
     public function store(Request $req)
     {
-        
         $cestaValidada = $req->validate([
             'ID_user' => 'required|integer|min:1',
             'fecha_compra' => 'required|date'
