@@ -10,13 +10,15 @@ use App\Http\Controllers\Producto_Controller;
 use App\Http\Controllers\NivelPiramide_Controller;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\EstadisticasProductosController;
-use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+
+
+Route::middleware(['auth.jwt'])->group(function () {
+    Route::get('/usuario/{id}', [UsuarioController::class, 'getById']);
+    Route::get('/usuarios/{id}/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
+});
 
 
 Route::get('productos', [Producto_Controller::class, 'getAll']); //Home
@@ -60,13 +62,11 @@ Route::get('/nivel-productos/{id}', [NivelPiramide_Controller::class, 'getPirami
 
 Route::get('/usuario/get-top-sellers', [Producto_Controller::class, 'getTopSellers']);
 Route::get('/usuario/{id}/rol', [UsuarioController::class, 'getRol']);
-Route::get('/usuario/{id}', [UsuarioController::class, 'getById']);
 Route::post('/usuario', [UsuarioController::class, 'putUser']);
 Route::delete('/usuario/{id}', [UsuarioController::class, 'deleteUser']);
 Route::post('/usuario/register', [UsuarioController::class, 'register']);
 Route::post('/usuario/login', [UsuarioController::class, 'login']);
 Route::get('/usuario/login/{id}', [UsuarioController::class, 'getUser']);
-Route::get('/usuarios/{id}/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
 
 
 //Estadisticas
