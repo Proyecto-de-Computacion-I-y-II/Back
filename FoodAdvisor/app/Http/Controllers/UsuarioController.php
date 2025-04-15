@@ -101,9 +101,15 @@ class UsuarioController extends Controller
             return response()->json(['message' => 'Credenciales incorrectas'], 401);
         }
 
+        $token = JWTAuth::fromUser($usuario);
+
         return response()->json([
             'mensaje' => 'Inicio de sesión exitoso',
-            'usuario' => $usuario
+            'usuario' => [
+                'nombre' => $usuario->nombre,
+                'correo' => $usuario->correo,
+            ],
+            'token' => $token,
         ], 200);
     }
 
