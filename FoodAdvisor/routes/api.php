@@ -18,8 +18,8 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::middleware(['auth.jwt'])->group(function () {
-    Route::get('/usuario/{id}', [UsuarioController::class, 'getById']);
     Route::get('/usuario/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
+    Route::get('/usuario/{id}', [UsuarioController::class, 'getById']);
 });
 
 
@@ -64,7 +64,6 @@ Route::get('/nivel-productos/{id}', [NivelPiramide_Controller::class, 'getPirami
 
 Route::get('/usuario/get-top-sellers', [Producto_Controller::class, 'getTopSellers']);
 Route::get('/usuario/{id}/rol', [UsuarioController::class, 'getRol']);
-Route::get('/usuario/{id}', [UsuarioController::class, 'getById']);
 Route::post('/usuario', [UsuarioController::class, 'putUser']);
 Route::delete('/usuario/{id}', [UsuarioController::class, 'deleteUser']);
 Route::post('/usuario/register', [UsuarioController::class, 'register']);
