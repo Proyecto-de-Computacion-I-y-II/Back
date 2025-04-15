@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth.jwt'])->group(function () {
     Route::get('/usuario/{id}', [UsuarioController::class, 'getById']);
-    Route::get('/usuarios/{id}/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
+    Route::get('/usuario/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
 });
 
 
