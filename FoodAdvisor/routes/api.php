@@ -14,9 +14,13 @@ use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+
+
+
+Route::middleware(['auth.jwt'])->group(function () {
+    Route::get('/usuario/{id}', [UsuarioController::class, 'getById']);
+    Route::get('/usuario/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
+});
 
 
 Route::get('productos', [Producto_Controller::class, 'getAll']); //Home

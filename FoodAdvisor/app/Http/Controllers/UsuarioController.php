@@ -121,15 +121,15 @@ class UsuarioController extends Controller
         return response()->json($usuario, 200);
     }
 
-    public function getCestasUsuario($id)
+    public function getCestasUsuario()
 {
-    $usuario = Usuario::find($id);
+    $usuario = JWTAuth::parseToken()->authenticate();
     
     if (!$usuario) {
-        return response()->json(['error' => 'Usuario no encontrado'], 404);
+        return response()->json(['error' => 'Usuario no autenticado'], 404);
     }
     
-    $cestas = \App\Models\Cesta_Compra::where('ID_user', $id)
+    $cestas = \App\Models\Cesta_Compra::where('ID_user', $usuario->ID_user)
                                     ->whereNull('deleted_at')
                                     ->get();
     
