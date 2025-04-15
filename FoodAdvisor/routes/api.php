@@ -21,6 +21,7 @@ Route::middleware(['auth.jwt'])->group(function () {
 });
 
 
+
 Route::get('productos', [Producto_Controller::class, 'getAll']); //Home
 Route::get('productos/{id}', [Producto_Controller::class, 'getProducto']); //Info Específica Prod
 Route::get('productos/productos-sim/{id}', [Producto_Controller::class, 'getSimilares']); //Info Específica Prod
