@@ -18,10 +18,14 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::middleware(['auth.jwt'])->group(function () {
+    
     Route::get('/usuario/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
     Route::get('/usuario', [UsuarioController::class, 'getByToken']);
-    Route::get('/usuario/cestas/{id}',[UsuarioController::class, 'getCestaById']);
-    Route::put('/usuario/cesta-actual', [UsuarioController::class, 'updateCestaActual']);
+    
+    Route::get('/usuario/cestas/{id}',[Cesta_Compra_Controller::class, 'getCestaById']);
+    Route::post('/cestas-compra/{cesta}',[Cesta_Compra_Controller::class, 'storeInCesta']);
+    Route::put('/cestas-compra/{cesta}/update-producto',[Cesta_Compra_Controller::class, 'updateProdFromCesta']);
+
 });
 
 
@@ -39,8 +43,6 @@ Route::get('/cestas-compra',[Cesta_Compra_Controller::class, 'getAll']);
 Route::post('/cestas-compra', [Cesta_Compra_Controller::class, 'store']);
 Route::put('/cestas-compra/{id}', [Cesta_Compra_Controller::class, 'updateCesta']); //Editar Cesta
 Route::get('/cestas-compra/{cesta}/productos',[Cesta_Compra_Controller::class, 'getProdFromCesta']);
-Route::post('/cestas-compra/{cesta}',[Cesta_Compra_Controller::class, 'storeInCesta']);
-Route::put('/cestas-compra/{cesta}/update-producto',[Cesta_Compra_Controller::class, 'updateProdFromCesta']);
 Route::delete('/cestas-compra/{cesta}', [Cesta_Compra_Controller::class, 'deleteCesta']);
 Route::delete('/cestas-compra/{cesta}/delete-producto/{id}', [Cesta_Compra_Controller::class, 'removeProductoFromCesta']);
 Route::middleware(['auth:sanctum'])->get('/compras/historial', [Cesta_Compra_Controller::class, 'getHistorialCompras']);

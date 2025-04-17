@@ -9,6 +9,8 @@ use App\Models\Producto;
 use App\Models\NivelPiramide;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+
 
 
 class Cesta_Compra_Controller extends Controller
@@ -21,10 +23,22 @@ class Cesta_Compra_Controller extends Controller
     }
 
     //Revisar que el valor que devuelva, lo devuelva con los productos asociados cargados y valida que el id recibido exista
-    public function getById(Cesta_Compra $id) {
-        return $id;
-    }
+    public function getById($id)
+    {
+        $usuario = JWTAuth::parseToken()->authenticate();
+    
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
+        }
 
+        $cesta = Cesta_Compra::with('productos')
+        ->where('ID_user', $usuario->ID_user)
+        ->where('ID_cesta', $id)
+        ->whereNull('deleted_at')
+        ->get();
+
+        return response()->json(['cesta' => $cesta], 200);
+    }
     //Sobra, integrar en getById
     public function getProdFromCesta(Cesta_Compra $cesta)
     {
@@ -62,9 +76,10 @@ class Cesta_Compra_Controller extends Controller
 
     //Revisar la funcionalidad de que si extiste añadir cantidad o devolver error de que el producto ya existe en canasta
     public function storeInCesta(Cesta_Compra $cesta, Request $req) {
-        $cesta->load('productos');
-        if(!$cesta){
-            return response()->json(['mensaje'=>'Error: Cesta no encontrada'],404);
+        $usuario = JWTAuth::parseToken()->authenticate();
+    
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
         }
 
         $validator = Validator::make($req->all(), [
@@ -75,10 +90,34 @@ class Cesta_Compra_Controller extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => 'Datos de entrada no válidos', 'errors' => $validator->errors()], 422);
         }
+        
+        $cesta->load('productos');
+        
+        if(!$cesta){
+            return response()->json(['mensaje'=>'Error: Cesta no encontrada'], 404);
+        }
+
+        $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a una cesta suya propia (y no la de otro)
+        ->where('ID_user', $usuario->ID_user)
+        ->where('ID_cesta',$cesta->ID_cesta)
+        ->whereNull('cesta_compra.deleted_at')
+        ->first();
+
+        if(!$cestaValidada){
+            return response()->json(['mensaje'=>'Error: Cesta no encontrada'], 404);
+        }
 
         $prod = Producto::find($req->ID_prod);
 
-        $pivot = $cesta->productos()->wherePivot('ID_prod', $prod->ID_prod)->first();
+        if(!$prod){
+            return response()->json(['mensaje'=>'Error: Producto a insertar no encontrado'], 404);
+        }
+
+        $pivot = $cesta->productos()
+        ->wherePivot('ID_prod', $prod->ID_prod)
+        ->whereNull('cesta_productos.deleted_at')
+        ->orderByDesc('ID_cesta')
+        ->first();
 
         if($pivot) {
             $curr_cant = $pivot->pivot->cantidad;
@@ -95,8 +134,24 @@ class Cesta_Compra_Controller extends Controller
     //Mejor usar este.
     public function updateProdFromCesta(Cesta_Compra $cesta, Request $req)
     {
+        $usuario = JWTAuth::parseToken()->authenticate();
+    
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
+        }
+
         $cesta->load('productos');
         if(!$cesta){
+            return response()->json(['mensaje'=>'Error: Cesta no encontrada'], 404);
+        }
+
+        $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a una cesta suya propia (y no la de otro)
+        ->where('ID_user', $usuario->ID_user)
+        ->where('ID_cesta',$cesta->ID_cesta)
+        ->whereNull('cesta_compra.deleted_at')
+        ->first();
+
+        if(!$cestaValidada){
             return response()->json(['mensaje'=>'Error: Cesta no encontrada'], 404);
         }
         
