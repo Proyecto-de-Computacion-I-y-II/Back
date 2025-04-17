@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Usuario;
+use App\Models\Cesta_Compra;
 use Illuminate\Support\Facades\Hash;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
@@ -21,12 +22,12 @@ class UsuarioController extends Controller
         return response()->json(['rol' => $usuario->rol], 200);
     }
 
-    public function getById($id)
+    public function getByToken()
     {
-        $usuario = Usuario::find($id);
+        $usuario = JWTAuth::parseToken()->authenticate();
     
         if (!$usuario) {
-            return response()->json(['error' => 'usuario no encontrado'], 404);
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
         }
     
         return response()->json(['usuario' => $usuario], 200);
@@ -122,18 +123,52 @@ class UsuarioController extends Controller
     }
 
     public function getCestasUsuario()
-{
-    $usuario = JWTAuth::parseToken()->authenticate();
-    
-    if (!$usuario) {
-        return response()->json(['error' => 'Usuario no autenticado'], 404);
+    {
+        $usuario = JWTAuth::parseToken()->authenticate();
+        
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
+        }
+        
+        $cestas = \App\Models\Cesta_Compra::where('ID_user', $usuario->ID_user)
+        ->whereNull('deleted_at')
+        ->get();
+        
+        return response()->json(['cestas' => $cestas], 200);
     }
+
+    public function getCestaById($id)
+    {
+        $usuario = JWTAuth::parseToken()->authenticate();
     
-    $cestas = \App\Models\Cesta_Compra::where('ID_user', $usuario->ID_user)
-                                    ->whereNull('deleted_at')
-                                    ->get();
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
+        }
+
+        $cesta = Cesta_Compra::with('productos')
+        ->where('ID_user', $usuario->ID_user)
+        ->where('ID_cesta', $id)
+        ->whereNull('deleted_at')
+        ->get();
+
+        return response()->json(['cesta' => $cesta], 200);
+    }
+
+    public function updateCestaActual(){
+        $usuario = JWTAuth::parseToken()->authenticate();
     
-    return response()->json(['cestas' => $cestas], 200);
-}
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
+        }
+        
+        $cesta = Cesta_Compra::with('productos')
+        ->where('ID_user', $usuario->ID_user)
+        ->whereNull('deleted_at')
+        ->orderByDesc('ID_cesta')
+        ->first();
+
+        //acabar
+
+    }
 
 }

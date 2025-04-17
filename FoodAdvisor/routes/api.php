@@ -19,7 +19,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth.jwt'])->group(function () {
     Route::get('/usuario/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
-    Route::get('/usuario/{id}', [UsuarioController::class, 'getById']);
+    Route::get('/usuario', [UsuarioController::class, 'getByToken']);
+    Route::get('/usuario/cestas/{id}',[UsuarioController::class, 'getCestaById']);
+    Route::put('/usuario/cesta-actual', [UsuarioController::class, 'updateCestaActual']);
 });
 
 
@@ -34,7 +36,6 @@ Route::post('productos', [Producto_Controller::class, 'postProducto']); //no com
 
 
 Route::get('/cestas-compra',[Cesta_Compra_Controller::class, 'getAll']);
-Route::get('/cestas-compra/{id}',[Cesta_Compra_Controller::class, 'getById']);//Editar cesta
 Route::post('/cestas-compra', [Cesta_Compra_Controller::class, 'store']);
 Route::put('/cestas-compra/{id}', [Cesta_Compra_Controller::class, 'updateCesta']); //Editar Cesta
 Route::get('/cestas-compra/{cesta}/productos',[Cesta_Compra_Controller::class, 'getProdFromCesta']);
