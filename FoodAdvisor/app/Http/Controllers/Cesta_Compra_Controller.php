@@ -42,12 +42,22 @@ class Cesta_Compra_Controller extends Controller
     //Sobra, integrar en getById
     public function getProdFromCesta(Cesta_Compra $cesta)
     {
-        $cesta->load('productos');
+        $usuario = JWTAuth::parseToken()->authenticate();
+    
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
+        }
 
-        if(!$cesta){
+        $cestaValidada = Cesta_Compra::with('productos')
+        ->where('ID_user', $usuario->ID_user)
+        ->where('ID_cesta', $cesta->ID_cesta)
+        ->whereNull('deleted_at')
+        ->get();
+
+        if(!$cestaValidada){
             return response()->json(['mensaje'=>'Error: Cesta no encontrada', 404]);
         }
-        return response()->json($cesta->productos,200);
+        return response()->json($cestaValidada->productos,200);
     }
 
     //Revisar que se valide el ID_user que exista. Sol: required ya busca que la foreign key exista. No hay que cambiar
@@ -199,8 +209,21 @@ class Cesta_Compra_Controller extends Controller
     }
 
     public function deleteCesta(Cesta_Compra $cesta) {
-        if (!$cesta) {
-            return response()->json(['mensaje' => 'Error: Cesta no encontrada'], 404);
+        
+        $usuario = JWTAuth::parseToken()->authenticate();
+    
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
+        }
+        
+        $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a una cesta suya propia (y no la de otro)
+        ->where('ID_user', $usuario->ID_user)
+        ->where('ID_cesta',$cesta->ID_cesta)
+        ->whereNull('cesta_compra.deleted_at')
+        ->first();
+
+        if(!$cestaValidada){
+            return response()->json(['mensaje'=>'Error: Cesta no encontrada'], 404);
         }
 
         $cesta->delete();

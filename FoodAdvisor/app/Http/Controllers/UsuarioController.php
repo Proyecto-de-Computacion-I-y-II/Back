@@ -54,12 +54,12 @@ class UsuarioController extends Controller
         return response()->json(['mensaje' => 'usuario creado correctamente', 'usuario' => $usuario], 201);
     }
 
-    public function deleteUser($id)
+    public function deleteUser()
     {
-        $usuario = Usuario::find($id);
-        
+        $usuario = JWTAuth::parseToken()->authenticate();
+
         if (!$usuario) {
-            return response()->json(['mensaje' => 'Error: Usuario no encontrado'], 404);
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
         }
         
         $usuario->delete();

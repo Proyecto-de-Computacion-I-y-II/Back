@@ -21,11 +21,15 @@ Route::middleware(['auth.jwt'])->group(function () {
     
     Route::get('/usuario/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
     Route::get('/usuario', [UsuarioController::class, 'getByToken']);
-    
     Route::get('/usuario/cestas/{id}',[Cesta_Compra_Controller::class, 'getCestaById']);
+    Route::delete('/usuario/delete', [UsuarioController::class, 'deleteUser']);
+
+
+
     Route::post('/cestas-compra/{cesta}',[Cesta_Compra_Controller::class, 'storeInCesta']);
     Route::put('/cestas-compra/{cesta}/update-producto',[Cesta_Compra_Controller::class, 'updateProdFromCesta']);
-
+    //Integrado en getById//Route::get('/cestas-compra/{cesta}/productos',[Cesta_Compra_Controller::class, 'getProdFromCesta']);
+    Route::delete('/cestas-compra/{cesta}', [Cesta_Compra_Controller::class, 'deleteCesta']);
 });
 
 
@@ -42,8 +46,6 @@ Route::post('productos', [Producto_Controller::class, 'postProducto']); //no com
 Route::get('/cestas-compra',[Cesta_Compra_Controller::class, 'getAll']);
 Route::post('/cestas-compra', [Cesta_Compra_Controller::class, 'store']);
 Route::put('/cestas-compra/{id}', [Cesta_Compra_Controller::class, 'updateCesta']); //Editar Cesta
-Route::get('/cestas-compra/{cesta}/productos',[Cesta_Compra_Controller::class, 'getProdFromCesta']);
-Route::delete('/cestas-compra/{cesta}', [Cesta_Compra_Controller::class, 'deleteCesta']);
 Route::delete('/cestas-compra/{cesta}/delete-producto/{id}', [Cesta_Compra_Controller::class, 'removeProductoFromCesta']);
 Route::middleware(['auth:sanctum'])->get('/compras/historial', [Cesta_Compra_Controller::class, 'getHistorialCompras']);
 
@@ -68,11 +70,9 @@ Route::get('/nivel-productos/{id}', [NivelPiramide_Controller::class, 'getPirami
 Route::get('/usuario/get-top-sellers', [Producto_Controller::class, 'getTopSellers']);
 Route::get('/usuario/{id}/rol', [UsuarioController::class, 'getRol']);
 Route::post('/usuario', [UsuarioController::class, 'putUser']);
-Route::delete('/usuario/{id}', [UsuarioController::class, 'deleteUser']);
 Route::post('/usuario/register', [UsuarioController::class, 'register']);
 Route::post('/usuario/login', [UsuarioController::class, 'login']);
 Route::get('/usuario/login/{id}', [UsuarioController::class, 'getUser']);
-Route::get('/usuarios/{id}/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
 
 
 //Estadisticas
