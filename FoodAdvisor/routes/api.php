@@ -30,6 +30,10 @@ Route::middleware(['auth.jwt'])->group(function () {
     Route::put('/cestas-compra/{cesta}/update-producto',[Cesta_Compra_Controller::class, 'updateProdFromCesta']);
     //Integrado en getById//Route::get('/cestas-compra/{cesta}/productos',[Cesta_Compra_Controller::class, 'getProdFromCesta']);
     Route::delete('/cestas-compra/{cesta}', [Cesta_Compra_Controller::class, 'deleteCesta']);
+
+
+    Route::get('/cestas/{cesta}/recomendar', [Cesta_Compra_Controller::class, 'recomendacion']);
+
 });
 
 
@@ -80,7 +84,6 @@ Route::get('/estadisticas/productos', [EstadisticasProductosController::class, '
 Route::get('/estadisticas/compras', [EstadisticasProductosController::class, 'obtenerEstadisticasCestas']);
 
 //Recomendar productos
-Route::get('/cestas/{cesta}/recomendar', [Cesta_Compra_Controller::class, 'recomendacion']);
 
 Route::get('productos-temp/{idTemp}/detalles', [Producto_temp_Controller::class, 'getDetalles']);
 Route::get('productos-temp', [Producto_temp_Controller::class, 'getProductosDelMes']);
