@@ -17,19 +17,16 @@ class JwtMiddleware extends BaseMiddleware
             // Log the token from the request header
             $token = JWTAuth::getToken();
             Log::info('Received Token: ' . $token);  // Log the token
-            
             // Parse the token and authenticate the user
             $user = JWTAuth::parseToken()->authenticate();
-
-            // Check expiration, if necessary
-            $payload = JWTAuth::parseToken()->getPayload();
-            $exp = $payload->get('exp');
-            $expirationDate = \Carbon\Carbon::createFromTimestamp($exp)->toDateTimeString();
-            Log::info('Token Expiration: ' . $expirationDate);
 
         } catch (Exception $e) {
             // Log the error details
             Log::error('JWT Error: ' . $e->getMessage());
+
+            if (strpos($e->getMessage(), 'expired') !== false){
+                return response()->json(['message' => 'El token ha expirado'], 401);
+            }
             
             return response()->json(['message' => 'Token no correcto o no proporcionado'], 401);
         }

@@ -25,7 +25,6 @@ Route::middleware(['auth.jwt'])->group(function () {
     Route::delete('/usuario/delete', [UsuarioController::class, 'deleteUser']);
 
 
-
     Route::post('/cestas-compra/{cesta}',[Cesta_Compra_Controller::class, 'storeInCesta']);
     Route::put('/cestas-compra/{cesta}/update-producto',[Cesta_Compra_Controller::class, 'updateProdFromCesta']);
     //Integrado en getById//Route::get('/cestas-compra/{cesta}/productos',[Cesta_Compra_Controller::class, 'getProdFromCesta']);
