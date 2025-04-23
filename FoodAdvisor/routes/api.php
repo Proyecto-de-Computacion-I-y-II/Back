@@ -13,11 +13,11 @@ use App\Http\Controllers\EstadisticasProductosController;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\JwtMiddleware;
 
 
 
-
-Route::middleware(['auth.jwt'])->group(function () {
+Route::middleware([JwtMiddleware::class])->group(function () {
     
     Route::get('/usuario/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
     Route::get('/usuario', [UsuarioController::class, 'getByToken']);
