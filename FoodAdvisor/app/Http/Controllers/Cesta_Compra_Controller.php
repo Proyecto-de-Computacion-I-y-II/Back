@@ -85,7 +85,7 @@ class Cesta_Compra_Controller extends Controller
     }
 
     //Revisar la funcionalidad de que si extiste añadir cantidad o devolver error de que el producto ya existe en canasta
-    public function storeInCesta(Cesta_Compra $cesta, Request $req) {
+    public function storeInCesta(Request $req) {
         $usuario = JWTAuth::parseToken()->authenticate();
     
         if (!$usuario) {
@@ -100,17 +100,11 @@ class Cesta_Compra_Controller extends Controller
         if ($validator->fails()) {
             return response()->json(['message' => 'Datos de entrada no válidos', 'errors' => $validator->errors()], 422);
         }
-        
-        $cesta->load('productos');
-        
-        if(!$cesta){
-            return response()->json(['mensaje'=>'Error: Cesta no encontrada'], 404);
-        }
 
-        $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a una cesta suya propia (y no la de otro)
+        $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a su cesta suya propia más reciente (y no la de otro)
         ->where('ID_user', $usuario->ID_user)
-        ->where('ID_cesta',$cesta->ID_cesta)
         ->whereNull('cesta_compra.deleted_at')
+        ->orderByDesc('ID_cesta')
         ->first();
 
         if(!$cestaValidada){
@@ -123,26 +117,25 @@ class Cesta_Compra_Controller extends Controller
             return response()->json(['mensaje'=>'Error: Producto a insertar no encontrado'], 404);
         }
 
-        $pivot = $cesta->productos()
-        ->wherePivot('ID_prod', $prod->ID_prod)
+        $pivot = $cestaValidada->productos()
+        ->wherePivot('cesta_productos.ID_prod', $prod->ID_prod)
         ->whereNull('cesta_productos.deleted_at')
-        ->orderByDesc('ID_cesta')
         ->first();
 
         if($pivot) {
             $curr_cant = $pivot->pivot->cantidad;
             $new_cant = $curr_cant+$req->cantidad;
-            $cesta->productos()->updateExistingPivot($prod->ID_prod, ['cantidad' => $new_cant]);
+            $cestaValidada->productos()->updateExistingPivot($prod->ID_prod, ['cantidad' => $new_cant]);
         } else {
-            $cesta->productos()->attach($prod->ID_prod, ['cantidad' => $req->cantidad]);
+            $cestaValidada->productos()->attach($prod->ID_prod, ['cantidad' => $req->cantidad]);
         }
 
-        $cesta->calcularPorcentajes();
+        $cestaValidada->calcularPorcentajes();
         return response()->json(['mensaje' => 'producto añadido a la cesta correctamente'], 200);
     }
 
     //Mejor usar este.
-    public function updateProdFromCesta(Cesta_Compra $cesta, Request $req)
+    public function updateProdFromCesta(Request $req)
     {
         $usuario = JWTAuth::parseToken()->authenticate();
     
@@ -150,15 +143,10 @@ class Cesta_Compra_Controller extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 404);
         }
 
-        $cesta->load('productos');
-        if(!$cesta){
-            return response()->json(['mensaje'=>'Error: Cesta no encontrada'], 404);
-        }
-
-        $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a una cesta suya propia (y no la de otro)
+        $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a su cesta suya propia más reciente (y no la de otro)
         ->where('ID_user', $usuario->ID_user)
-        ->where('ID_cesta',$cesta->ID_cesta)
         ->whereNull('cesta_compra.deleted_at')
+        ->orderByDesc('ID_cesta')
         ->first();
 
         if(!$cestaValidada){
@@ -176,13 +164,16 @@ class Cesta_Compra_Controller extends Controller
             return response()->json(['mensaje' => 'Error: Producto no encontrado'], 404);
         }
 
-        $pivotData = $cesta->productos()->wherePivot('ID_prod', $prod->ID_prod)->first();
+        $pivotData = $cestaValidada->productos()
+        ->wherePivot('cesta_productos.ID_prod', $prod->ID_prod)
+        ->whereNull('cesta_productos.deleted_at')
+        ->first();
 
-        $cesta->calcularPorcentajes();
+        $cestaValidada->calcularPorcentajes();
 
         if ($pivotData) {
-            $cesta->productos()->updateExistingPivot($prod->ID_prod, ['cantidad' => $validatedProd['cantidad']]);
-            $cesta->productos()->syncWithoutDetaching([
+            $cestaValidada->productos()->updateExistingPivot($prod->ID_prod, ['cantidad' => $validatedProd['cantidad']]);
+            $cestaValidada->productos()->syncWithoutDetaching([
                 $prod->ID_prod => ['cantidad' => $validatedProd['cantidad']]
             ]);
             return response()->json(['mensaje' => 'Cantidad actualizada correctamente'], 200);
