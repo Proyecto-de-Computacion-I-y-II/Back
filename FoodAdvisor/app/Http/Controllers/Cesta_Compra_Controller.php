@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Cesta_Compra;
 use App\Models\Producto;
+use App\Models\Porcentaje;
 use App\Models\NivelPiramide;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -256,7 +257,7 @@ class Cesta_Compra_Controller extends Controller
     {
         // Obtener los Niveles y sus Porcentajes Recomendados desde la BBDD
         $nivelesPiramide = NivelPiramide::all(); // Obtiene todos los niveles de la tabla
-
+    
         // Validar si se obtuvieron niveles
         if ($nivelesPiramide->isEmpty()) {
             return response()->json([
@@ -264,12 +265,12 @@ class Cesta_Compra_Controller extends Controller
                 'recomendaciones' => [],
             ], 404); // Error porque falta configuración básica
         }
-
+    
         // Obtener Productos y Calcular Porcentajes Actuales en la Cesta
         // Asegúrate de que la relación 'productos' se carga con la cantidad en el pivot
         $productosEnCesta = $cesta->productos()->withPivot('cantidad')->get();
         $totalProductos = 0;
-
+    
         foreach ($productosEnCesta as $producto) {
             if ($producto && isset($producto->pivot) && isset($producto->pivot->cantidad)) {
                 $totalProductos += $producto->pivot->cantidad;
@@ -282,9 +283,9 @@ class Cesta_Compra_Controller extends Controller
                 ], 500);
             }
         }
-
+    
         $productosPorNivel = [];
-
+    
         if ($totalProductos > 0) {
             $cantidadesPorNivel = $productosEnCesta->groupBy('idNivel')
                 ->map(function ($group) {
@@ -300,7 +301,7 @@ class Cesta_Compra_Controller extends Controller
                     }
                     return $totalNivel;
                 });
-
+    
             foreach ($cantidadesPorNivel as $idNivel => $cantidad) {
                 $productosPorNivel[$idNivel] = ($cantidad / $totalProductos) * 100;
             }
@@ -310,7 +311,7 @@ class Cesta_Compra_Controller extends Controller
                 'recomendaciones' => [],
             ], 200);
         }
-
+    
         // Identificar Niveles Deficitarios comparando con la BBDD ---
         $nivelesDeficitarios = [];
         // Itera sobre los niveles obtenidos de la base de datos
@@ -318,7 +319,7 @@ class Cesta_Compra_Controller extends Controller
             // Accede a la clave primaria usando getKey() o directamente si sabes el nombre (idNivel)
             $idNivelActual = $nivel->idNivel;
             $porcentajeActual = $productosPorNivel[$idNivelActual] ?? 0;
-
+    
             // Compara con el mínimo almacenado en la tabla nivelPiramide
             // Asegúrate que las columnas se llaman 'minimo' y 'maximo'
             if ($porcentajeActual < $nivel->minimo) {
@@ -327,26 +328,27 @@ class Cesta_Compra_Controller extends Controller
             // Podrías añadir lógica para niveles con exceso si lo necesitas:
             // else if ($porcentajeActual > $nivel->maximo) { ... }
         }
-
+    
         // Obtener Recomendaciones Aleatorias de los Niveles Deficitarios ---
         $recomendacionesPorNivel = []; // Array para almacenar recomendaciones por nivel
         if (!empty($nivelesDeficitarios)) {
             $idsProductosEnCesta = $productosEnCesta->pluck('ID_prod')->toArray(); // Ajusta 'ID_prod'
-
+    
             foreach ($nivelesDeficitarios as $nivelId) {
                 $productosRecomendados = Producto::where('idNivel', $nivelId) // Ajusta 'idNivel'
                     ->whereNotIn('ID_prod', $idsProductosEnCesta) // Ajusta 'ID_prod'
                     ->inRandomOrder()
                     ->take(4)
                     ->select(['ID_prod', 'nombre', 'precio', 'imagen', 'idNivel']) // Ajusta campos
+                    ->with('nivelPiramide:idNivel,Nombre') // Cargar la relación nivelPiramide y seleccionar los campos necesarios
                     ->get();
-
+    
                 if (!$productosRecomendados->isEmpty()) {
                     $recomendacionesPorNivel[$nivelId] = $productosRecomendados;
                 }
             }
         }
-
+    
         // Devolver Respuesta JSON ---
         if (empty($recomendacionesPorNivel) && !empty($nivelesDeficitarios)) {
             return response()->json([
@@ -359,10 +361,105 @@ class Cesta_Compra_Controller extends Controller
                 'recomendaciones' => [],
             ]);
         } else {
+            // Formatear la respuesta para que el nombre del nivel esté directamente en cada producto
+            $formattedRecomendaciones = [];
+            foreach ($recomendacionesPorNivel as $nivelId => $productos) {
+                $formattedRecomendaciones[$nivelId] = $productos->map(function ($producto) {
+                    return [
+                        'ID_prod' => $producto->ID_prod,
+                        'nombre' => $producto->nombre,
+                        'precio' => $producto->precio,
+                        'imagen' => $producto->imagen,
+                        'idNivel' => $producto->idNivel,
+                        'nombreNivel' => $producto->nivelPiramide->Nombre ?? null, // Acceder al nombre del nivel cargado
+                    ];
+                });
+            }
+    
             return response()->json([
-                'recomendaciones' => $recomendacionesPorNivel,
+                'recomendaciones' => $formattedRecomendaciones,
             ]);
         }
+    }
+
+    /**
+     * Obtiene los porcentajes asociados a una cesta específica.
+     *
+     * @param int $id El ID de la cesta.
+     * @return JsonResponse
+     */
+    public function obtenerPorcentajesCesta(int $id): JsonResponse
+    {
+        // Busca la cesta por su ID
+        $cesta = Cesta_Compra::find($id);
+
+        // Si la cesta no existe, devuelve un error 404
+        if (!$cesta) {
+            return response()->json(['mensaje' => 'Cesta no encontrada'], 404);
+        }
+
+        // Obtiene los porcentajes asociados a esta cesta utilizando la relación definida en el modelo Porcentaje
+        $porcentajes = Porcentaje::where('ID_cesta', $id)->with('nivelPiramide')->get();
+
+        // Devuelve los porcentajes en formato JSON
+        return response()->json($porcentajes);
+    }
+
+    public function storeRecommendedInCesta(Cesta_Compra $cesta, Request $req)
+    {
+        $usuario = JWTAuth::parseToken()->authenticate();
+
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401); // Código 401 para no autenticado
+        }
+
+        $validator = Validator::make($req->all(), [
+            'ID_prod' => 'required|exists:producto,ID_prod',
+            'cantidad' => 'required|integer|min:1', // Aseguramos que la cantidad sea al menos 1
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['message' => 'Datos de entrada no válidos', 'errors' => $validator->errors()], 422);
+        }
+
+        $cesta->load('productos');
+
+        if (!$cesta) {
+            return response()->json(['mensaje' => 'Error: Cesta no encontrada'], 404);
+        }
+
+        $cestaValidada = Cesta_Compra::with('productos')
+            ->where('ID_user', $usuario->ID_user)
+            ->where('ID_cesta', $cesta->ID_cesta)
+            ->whereNull('cesta_compra.deleted_at')
+            ->first();
+
+        if (!$cestaValidada) {
+            return response()->json(['mensaje' => 'Error: Cesta no encontrada o no pertenece al usuario'], 404);
+        }
+
+        $prod = Producto::find($req->ID_prod);
+
+        if (!$prod) {
+            return response()->json(['mensaje' => 'Error: Producto a insertar no encontrado'], 404);
+        }
+
+        $pivot = $cesta->productos()
+            ->wherePivot('ID_prod', $prod->ID_prod)
+            ->whereNull('cesta_productos.deleted_at')
+            ->orderByDesc('ID_cesta')
+            ->first();
+
+        if ($pivot) {
+            $curr_cant = $pivot->pivot->cantidad;
+            $new_cant = $curr_cant + $req->cantidad;
+            $cesta->productos()->updateExistingPivot($prod->ID_prod, ['cantidad' => $new_cant, 'recomendado' => true]); // Establecemos 'recomendado' a true
+        } else {
+            $cesta->productos()->attach($prod->ID_prod, ['cantidad' => $req->cantidad, 'recomendado' => true]); // Establecemos 'recomendado' a true al añadir
+        }
+
+        $cesta->calcularPorcentajes();
+        return response()->json(['mensaje' => 'Producto recomendado añadido a la cesta correctamente'], 200);
     }
 
 

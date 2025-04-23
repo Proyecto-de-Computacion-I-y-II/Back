@@ -21,7 +21,7 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     
     Route::get('/usuario/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
     Route::get('/usuario', [UsuarioController::class, 'getByToken']);
-    Route::get('/usuario/cestas/{id}',[Cesta_Compra_Controller::class, 'getCestaById']);
+    Route::get('/usuario/cestas/{id}',[Cesta_Compra_Controller::class, 'getById']);
     Route::delete('/usuario/delete', [UsuarioController::class, 'deleteUser']);
 
 
@@ -86,3 +86,5 @@ Route::get('/estadisticas/compras', [EstadisticasProductosController::class, 'ob
 
 Route::get('productos-temp/{idTemp}/detalles', [Producto_temp_Controller::class, 'getDetalles']);
 Route::get('productos-temp', [Producto_temp_Controller::class, 'getProductosDelMes']);
+
+Route::get('/cestas/{id}/porcentajes', [Cesta_Compra_Controller::class, 'obtenerPorcentajesCesta']);
