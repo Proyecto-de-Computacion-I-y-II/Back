@@ -405,60 +405,53 @@ class Cesta_Compra_Controller extends Controller
         return response()->json($porcentajes);
     }
 
-    public function storeRecommendedInCesta(Cesta_Compra $cesta, Request $req)
+    public function storeRecommendedInCesta(Request $req)
     {
         $usuario = JWTAuth::parseToken()->authenticate();
-
+    
         if (!$usuario) {
-            return response()->json(['error' => 'Usuario no autenticado'], 401); // Código 401 para no autenticado
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
-
+    
         $validator = Validator::make($req->all(), [
             'ID_prod' => 'required|exists:producto,ID_prod',
-            'cantidad' => 'required|integer|min:1', // Aseguramos que la cantidad sea al menos 1
+            'cantidad' => 'required|integer|min:1',
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json(['message' => 'Datos de entrada no válidos', 'errors' => $validator->errors()], 422);
         }
-
-        $cesta->load('productos');
-
-        if (!$cesta) {
-            return response()->json(['mensaje' => 'Error: Cesta no encontrada'], 404);
-        }
-
+    
         $cestaValidada = Cesta_Compra::with('productos')
             ->where('ID_user', $usuario->ID_user)
-            ->where('ID_cesta', $cesta->ID_cesta)
             ->whereNull('cesta_compra.deleted_at')
+            ->orderByDesc('ID_cesta')
             ->first();
-
+    
         if (!$cestaValidada) {
-            return response()->json(['mensaje' => 'Error: Cesta no encontrada o no pertenece al usuario'], 404);
+            return response()->json(['mensaje' => 'Error: Cesta no encontrada para este usuario'], 404);
         }
-
+    
         $prod = Producto::find($req->ID_prod);
-
+    
         if (!$prod) {
             return response()->json(['mensaje' => 'Error: Producto a insertar no encontrado'], 404);
         }
-
-        $pivot = $cesta->productos()
+    
+        $pivot = $cestaValidada->productos()
             ->wherePivot('ID_prod', $prod->ID_prod)
             ->whereNull('cesta_productos.deleted_at')
-            ->orderByDesc('ID_cesta')
             ->first();
-
+    
         if ($pivot) {
             $curr_cant = $pivot->pivot->cantidad;
             $new_cant = $curr_cant + $req->cantidad;
-            $cesta->productos()->updateExistingPivot($prod->ID_prod, ['cantidad' => $new_cant, 'recomendado' => true]); // Establecemos 'recomendado' a true
+            $cestaValidada->productos()->updateExistingPivot($prod->ID_prod, ['cantidad' => $new_cant, 'recomendado' => true]);
         } else {
-            $cesta->productos()->attach($prod->ID_prod, ['cantidad' => $req->cantidad, 'recomendado' => true]); // Establecemos 'recomendado' a true al añadir
+            $cestaValidada->productos()->attach($prod->ID_prod, ['cantidad' => $req->cantidad, 'recomendado' => true]);
         }
-
-        $cesta->calcularPorcentajes();
+    
+        $cestaValidada->calcularPorcentajes();
         return response()->json(['mensaje' => 'Producto recomendado añadido a la cesta correctamente'], 200);
     }
 
