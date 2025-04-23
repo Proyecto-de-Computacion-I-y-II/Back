@@ -169,13 +169,14 @@ class Cesta_Compra_Controller extends Controller
         ->whereNull('cesta_productos.deleted_at')
         ->first();
 
-        $cestaValidada->calcularPorcentajes();
-
         if ($pivotData) {
             $cestaValidada->productos()->updateExistingPivot($prod->ID_prod, ['cantidad' => $validatedProd['cantidad']]);
             $cestaValidada->productos()->syncWithoutDetaching([
                 $prod->ID_prod => ['cantidad' => $validatedProd['cantidad']]
             ]);
+
+            $cestaValidada->calcularPorcentajes();
+            
             return response()->json(['mensaje' => 'Cantidad actualizada correctamente'], 200);
 
         } else {
