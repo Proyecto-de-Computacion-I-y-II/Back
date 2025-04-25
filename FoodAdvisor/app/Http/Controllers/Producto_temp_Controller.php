@@ -90,13 +90,15 @@ public function getProductosDelMes()
 
     // Consultar productos donde el valor del mes actual sea 1
     $productos = DB::table('productos_temp')
-        ->where($nombreMes, 1)
-        ->pluck('producto');
+    ->where($nombreMes, 1)
+    ->select('idTemp', 'producto')
+    ->get();
 
-    // Retornar como JSON (ideal para APIs o frontends que consumen datos)
+    // Retornar como JSON
     return response()->json([
         'mes' => $nombreMes,
         'productos' => $productos
     ]);
 }
+
 }

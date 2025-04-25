@@ -16,4 +16,4 @@ class Producto_temp extends Model
     {
         return $this->hasMany(Producto::class, 'idTemp', 'idTemp');
     }
-}
+}   
