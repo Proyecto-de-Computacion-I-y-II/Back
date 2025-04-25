@@ -8,11 +8,18 @@ use App\Models\Producto;
 
 class Producto_Controller extends Controller
 {
-    public function getAll()
-    {
-        $productos = Producto::paginate(50);    //para hacer consultas por pagina, hacer /api/productos?page=x, siendo x el numero de pagina
-        return response()->json($productos, 200);
-    }
+public function getAll()
+{
+    $productos = Producto::paginate(60);
+
+    return response()->json([
+        'productos' => $productos->items(), // Devuelve solo los elementos de la página actual
+        'total_paginas' => $productos->lastPage(), // Devuelve el número total de páginas
+        'pagina_actual' => $productos->currentPage(), // Devuelve el número de la página actual
+        'total_elementos' => $productos->total(), // Devuelve el número total de elementos
+        'elementos_por_pagina' => $productos->perPage(), // Devuelve la cantidad de elementos por página
+    ], 200);
+}
 
     public function getProducto($id)
     {
@@ -117,9 +124,15 @@ class Producto_Controller extends Controller
                     ELSE 3 END", ["$nombre", "$nombre%"]);  // Ordena por prioridad: 1) coincidencia exacta 2) coincidencia parcial y 3) productos que solo contienen la palabra
     }    
 
-    $producto = $query->paginate(50);   //Paginacion de los resultados (si son muchos no funciona)
+    $productos = $query->paginate(60);   //Paginacion de los resultados (si son muchos no funciona)
 
-    return response()->json($producto);
+    return response()->json([
+        'productos' => $productos->items(), // Devuelve solo los elementos de la página actual
+        'total_paginas' => $productos->lastPage(), // Devuelve el número total de páginas
+        'pagina_actual' => $productos->currentPage(), // Devuelve el número de la página actual
+        'total_elementos' => $productos->total(), // Devuelve el número total de elementos
+        'elementos_por_pagina' => $productos->perPage(), // Devuelve la cantidad de elementos por página
+    ], 200);
 }
 
 public function getTopSellers()
