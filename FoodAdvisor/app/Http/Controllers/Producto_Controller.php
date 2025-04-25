@@ -12,13 +12,7 @@ public function getAll()
 {
     $productos = Producto::paginate(60);
 
-    return response()->json([
-        'productos' => $productos->items(), // Devuelve solo los elementos de la página actual
-        'total_paginas' => $productos->lastPage(), // Devuelve el número total de páginas
-        'pagina_actual' => $productos->currentPage(), // Devuelve el número de la página actual
-        'total_elementos' => $productos->total(), // Devuelve el número total de elementos
-        'elementos_por_pagina' => $productos->perPage(), // Devuelve la cantidad de elementos por página
-    ], 200);
+    return response()->json($productos, 200);
 }
 
     public function getProducto($id)
@@ -126,13 +120,7 @@ public function getAll()
 
     $productos = $query->paginate(60);   //Paginacion de los resultados (si son muchos no funciona)
 
-    return response()->json([
-        'productos' => $productos->items(), // Devuelve solo los elementos de la página actual
-        'total_paginas' => $productos->lastPage(), // Devuelve el número total de páginas
-        'pagina_actual' => $productos->currentPage(), // Devuelve el número de la página actual
-        'total_elementos' => $productos->total(), // Devuelve el número total de elementos
-        'elementos_por_pagina' => $productos->perPage(), // Devuelve la cantidad de elementos por página
-    ], 200);
+    return response()->json($productos, 200);
 }
 
 public function getTopSellers()
