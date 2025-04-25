@@ -131,10 +131,13 @@ class UsuarioController extends Controller
         }
         
         $cestas = \App\Models\Cesta_Compra::where('ID_user', $usuario->ID_user)
-        ->whereNull('deleted_at')
-        ->orderByDesc('ID_cesta')
-        ->get();
+            ->whereNull('deleted_at')
+            ->withCount('productos as totalProductoEnCestas')
+            ->orderByDesc('ID_cesta')
+            ->get();
         
         return response()->json(['cestas' => $cestas], 200);
     }
+    
+    
 }
