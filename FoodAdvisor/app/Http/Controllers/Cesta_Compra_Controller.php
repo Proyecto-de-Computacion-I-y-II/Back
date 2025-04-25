@@ -339,8 +339,8 @@ class Cesta_Compra_Controller extends Controller
                     ->whereNotIn('ID_prod', $idsProductosEnCesta) // Ajusta 'ID_prod'
                     ->inRandomOrder()
                     ->take(4)
-                    ->select(['ID_prod', 'nombre', 'precio', 'imagen', 'idNivel']) // Ajusta campos
-                    ->with('nivelPiramide:idNivel,Nombre') // Cargar la relación nivelPiramide y seleccionar los campos necesarios
+                    ->select(['ID_prod', 'nombre', 'precio', 'imagen', 'idNivel', 'idSuper']) // ¡Aquí está el cambio! Asumiendo 'idSuper'
+                    ->with(['nivelPiramide:idNivel,Nombre', 'supermercado:idSuper,nombre_supermercado']) // Carga la relación 'supermercado'
                     ->get();
     
                 if (!$productosRecomendados->isEmpty()) {
@@ -361,7 +361,7 @@ class Cesta_Compra_Controller extends Controller
                 'recomendaciones' => [],
             ]);
         } else {
-            // Formatear la respuesta para que el nombre del nivel esté directamente en cada producto
+            // Formatear la respuesta para que el nombre del nivel y el supermercado estén directamente en cada producto
             $formattedRecomendaciones = [];
             foreach ($recomendacionesPorNivel as $nivelId => $productos) {
                 $formattedRecomendaciones[$nivelId] = $productos->map(function ($producto) {
@@ -372,6 +372,8 @@ class Cesta_Compra_Controller extends Controller
                         'imagen' => $producto->imagen,
                         'idNivel' => $producto->idNivel,
                         'nombreNivel' => $producto->nivelPiramide->Nombre ?? null, // Acceder al nombre del nivel cargado
+                        'idSupermercado' => $producto->idSuper, // ¡Aquí también el cambio!
+                        'nombreSupermercado' => $producto->supermercado->nombre_supermercado ?? null, // Acceder al nombre del supermercado cargado
                     ];
                 });
             }
