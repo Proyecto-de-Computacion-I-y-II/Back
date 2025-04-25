@@ -87,5 +87,6 @@ Route::get('/estadisticas/compras', [EstadisticasProductosController::class, 'ob
 
 Route::get('productos-temp/{idTemp}/detalles', [Producto_temp_Controller::class, 'getDetalles']);
 Route::get('productos-temp', [Producto_temp_Controller::class, 'getProductosDelMes']);
+Route::get('productos-temp/{mes}', [Producto_temp_Controller::class, 'getProductsByMonth']);
 
 Route::get('/cestas/{id}/porcentajes', [Cesta_Compra_Controller::class, 'obtenerPorcentajesCesta']);
