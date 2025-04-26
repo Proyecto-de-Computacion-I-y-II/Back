@@ -31,14 +31,25 @@ class Cesta_Compra_Controller extends Controller
         if (!$usuario) {
             return response()->json(['error' => 'Usuario no autenticado'], 404);
         }
-
+    
         $cesta = Cesta_Compra::with('productos')
-        ->where('ID_user', $usuario->ID_user)
-        ->where('ID_cesta', $id)
-        ->whereNull('deleted_at')
-        ->get();
-
-        return response()->json(['cesta' => $cesta], 200);
+            ->where('ID_user', $usuario->ID_user)
+            ->where('ID_cesta', $id)
+            ->whereNull('deleted_at')
+            ->first(); // Usamos first() en lugar de get() para obtener un solo objeto
+    
+        if (!$cesta) {
+            return response()->json(['error' => 'Cesta no encontrada'], 404);
+        }
+    
+        $ultimaCestaId = Cesta_Compra::where('ID_user', $usuario->ID_user)
+            ->whereNull('deleted_at')
+            ->orderByDesc('ID_cesta')
+            ->value('ID_cesta'); // Obtenemos solo el ID de la última cesta
+    
+        $esUltima = ($cesta->ID_cesta === $ultimaCestaId);
+    
+        return response()->json(['cesta' => $cesta, 'ultima' => $esUltima], 200);
     }
     //Sobra, integrar en getById
     public function getProdFromCesta(Cesta_Compra $cesta)
