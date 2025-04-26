@@ -33,6 +33,8 @@ Route::middleware([JwtMiddleware::class])->group(function () {
 
 
     Route::get('/cestas/{cesta}/recomendar', [Cesta_Compra_Controller::class, 'recomendacion']);
+    
+    Route::get('/usuario/productos-totales', [Producto_Controller::class, 'getTotalProductosComprados']);
 
 });
 
@@ -71,7 +73,6 @@ Route::get('/productos-temp/{mes}', [Producto_temp_Controller::class, 'getProduc
 Route::get('/mostrar-niveles', [NivelPiramide_Controller::class, 'getNivelesPiramide']);
 Route::get('/nivel-productos/{id}', [NivelPiramide_Controller::class, 'getPiramide']); //Home. Este filtro irá por separado.
 
-Route::get('/usuario/get-top-sellers', [Producto_Controller::class, 'getTopSellers']);
 Route::get('/usuario/{id}/rol', [UsuarioController::class, 'getRol']);
 Route::post('/usuario', [UsuarioController::class, 'putUser']);
 Route::post('/usuario/register', [UsuarioController::class, 'register']);
