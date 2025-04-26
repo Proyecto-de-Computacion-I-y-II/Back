@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Producto;
-use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Log;
 
 class Producto_Controller extends Controller
 {
@@ -65,7 +65,8 @@ public function getAll()
         
         $pythonPath = 'python';
         $output = shell_exec("$pythonPath $pythonScript " . escapeshellarg($id->ID_prod-1). " 2>&1");
-
+        
+        Log::info('Raw Python output: ' . $output);
         // Convertir la salida JSON en un array PHP
         $similarIds = json_decode($output, true);
 
@@ -124,31 +125,24 @@ public function getAll()
     return response()->json($productos, 200);
 }
 
-public function getTotalProductosComprados()
+public function getTopSellers()
 {
-    try {
-        // Autenticar usuario desde el token JWT
-        $user = JWTAuth::parseToken()->authenticate();
+    $topSellers = DB::table('cesta_compra') // Sin comillas dobles aquí
+        ->join('cesta_productos', 'cesta_compra.ID_cesta', '=', 'cesta_productos.ID_cesta')
+        ->join('usuario', 'cesta_compra.ID_user', '=', 'usuario.ID_user')
+        ->select(
+            'usuario.ID_user',
+            'usuario.nombre',
+            'usuario.apellidos',
+            DB::raw('SUM("cesta_productos"."cantidad") as total_comprado') // Solo aquí con comillas dobles
+        )
+        ->groupBy('usuario.ID_user', 'usuario.nombre', 'usuario.apellidos')
+        ->orderByDesc('total_comprado')
+        ->take(10)
+        ->get();
 
-        if (!$user) {
-            return response()->json(['message' => 'Usuario no encontrado'], 404);
-        }
-
-        // Sumar cantidad de productos de todas sus cestas
-        $totalProductos = DB::table('cesta_compra')
-            ->join('cesta_productos', 'cesta_compra.ID_cesta', '=', 'cesta_productos.ID_cesta')
-            ->where('cesta_compra.ID_user', $user->ID_user)
-            ->sum('cesta_productos.cantidad');
-
-        return response()->json([
-            'total_comprado' => $totalProductos
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json($e->getMessage(), 500);
-    }
+    return response()->json($topSellers);
 }
-
 
 public function getMaxValues()
 {
