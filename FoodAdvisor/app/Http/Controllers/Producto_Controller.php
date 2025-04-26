@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Producto;
 use Illuminate\Support\Facades\Log;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+
 
 class Producto_Controller extends Controller
 {
@@ -125,37 +127,35 @@ public function getAll()
     return response()->json($productos, 200);
 }
 
-public function getTotalProductos()
+public function getTotalProductosComprados()
 {
-    $usuario = JWTAuth::user();
+    try {
+        // Autenticar usuario desde el token JWT
+        $user = JWTAuth::parseToken()->authenticate();
 
-    $total = DB::table('cesta_compra')
-        ->join('cesta_productos', 'cesta_compra.ID_cesta', '=', 'cesta_productos.ID_cesta')
-        ->where('cesta_compra.ID_user', $usuario->ID_user)
-        ->sum('cesta_productos.cantidad');
+        if (!$user) {
+            return response()->json(['message' => 'Usuario no encontrado'], 404);
+        }
 
-    return response()->json(['total_comprado' => $total]);
+        // Sumar cantidad de productos de todas sus cestas
+        $totalProductos = DB::table('cesta_compra')
+            ->join('cesta_productos', 'cesta_compra.ID_cesta', '=', 'cesta_productos.ID_cesta')
+            ->where('cesta_compra.ID_user', $user->ID_user)
+            ->sum('cesta_productos.cantidad');
+
+        return response()->json([
+            'total_comprado' => $totalProductos
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error en getTotalProductosComprados: ' . $e->getMessage());
+        return response()->json([
+            'message' => 'Error al obtener productos comprados',
+            'error' => $e->getMessage()
+        ], 500);
+    }
 }
 
-
-public function getTopSellers()
-{
-    $topSellers = DB::table('cesta_compra') // Sin comillas dobles aquí
-        ->join('cesta_productos', 'cesta_compra.ID_cesta', '=', 'cesta_productos.ID_cesta')
-        ->join('usuario', 'cesta_compra.ID_user', '=', 'usuario.ID_user')
-        ->select(
-            'usuario.ID_user',
-            'usuario.nombre',
-            'usuario.apellidos',
-            DB::raw('SUM("cesta_productos"."cantidad") as total_comprado') // Solo aquí con comillas dobles
-        )
-        ->groupBy('usuario.ID_user', 'usuario.nombre', 'usuario.apellidos')
-        ->orderByDesc('total_comprado')
-        ->take(10)
-        ->get();
-
-    return response()->json($topSellers);
-}
 
 public function getMaxValues()
 {
