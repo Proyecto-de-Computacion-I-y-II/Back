@@ -125,6 +125,19 @@ public function getAll()
     return response()->json($productos, 200);
 }
 
+public function getTotalProductos()
+{
+    $usuario = JWTAuth::user();
+
+    $total = DB::table('cesta_compra')
+        ->join('cesta_productos', 'cesta_compra.ID_cesta', '=', 'cesta_productos.ID_cesta')
+        ->where('cesta_compra.ID_user', $usuario->ID_user)
+        ->sum('cesta_productos.cantidad');
+
+    return response()->json(['total_comprado' => $total]);
+}
+
+
 public function getTopSellers()
 {
     $topSellers = DB::table('cesta_compra') // Sin comillas dobles aquí

@@ -36,6 +36,7 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     
     Route::get('/usuario/productos-totales', [Producto_Controller::class, 'getTotalProductosComprados']);
 
+    Route::get('/usuario/productos-totales', [Producto_Controller::class, 'getTotalProductosComprados']);
 });
 
 
