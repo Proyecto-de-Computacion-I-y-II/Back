@@ -7,15 +7,17 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-# Cargar el CSV
-df = pd.read_csv("../storage/app/private/Productos_finales(1.2).csv", sep=",", low_memory=False)
-
-# Definir funciones explícitas para selección de datos
 def select_text_column(x):
     return x.iloc[:, 0]
 
 def select_num_columns(x):
     return x.iloc[:, 1:]
+
+# Cargar el CSV
+df = pd.read_csv("../storage/app/private/Productos_finales(1.2).csv", sep=",", low_memory=False)
+
+# Create an index map for fast lookup of rows by ID_PROD (O(1) lookup)
+id_to_index = {row['ID_prod']: idx for idx, row in df.iterrows()}
 
 # Cargar el modelo y las funciones personalizadas
 model_path = "../storage/app/private/modelo_productos_similares.pkl"
@@ -45,11 +47,17 @@ def find_nearest_products(input_index, k=6):
     return nearest_products.to_dict(orient="records")  # Convert to JSON serializable format
 
 # Obtener el ID del producto desde PHP
-product_id = int(sys.argv[1])
+product_id = int(sys.argv[1])+1
+
+# Use the precomputed dictionary to quickly find the index for the product ID
+if product_id in id_to_index:
+    product_index = id_to_index[product_id]
+else:
+    print(json.dumps({"error": "Product ID not found"}))
+    sys.exit(1)
 
 # Encontrar productos similares
-similar_products = find_nearest_products(product_id)
+similar_products = find_nearest_products(product_index)
 
 # Devolver los resultados en formato JSON
 print(json.dumps(similar_products))
-
