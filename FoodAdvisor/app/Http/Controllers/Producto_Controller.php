@@ -120,13 +120,15 @@ public function getAll()
     //Filtro por nombre
     if ($request->has('nombre')) {
         $nombre = $request->nombre;
-        $query->where('nombre', 'ILIKE', "$nombre%")  // Prioriza coincidencias exactas
-              ->orWhere('nombre', 'ILIKE', "%$nombre%") // Si no hay, pasa a coincidencias parciales
-              ->orderByRaw("CASE 
-                    WHEN nombre ILIKE ? THEN 1 
-                    WHEN nombre ILIKE ? THEN 2 
-                    ELSE 3 END", ["$nombre", "$nombre%"]);  // Ordena por prioridad: 1) coincidencia exacta 2) coincidencia parcial y 3) productos que solo contienen la palabra
-    }    
+        $query->where(function ($q) use ($nombre) {
+            $q->where('nombre', 'ILIKE', "$nombre%")
+              ->orWhere('nombre', 'ILIKE', "%$nombre%");
+        })
+        ->orderByRaw("CASE 
+                WHEN nombre ILIKE ? THEN 1 
+                WHEN nombre ILIKE ? THEN 2 
+                ELSE 3 END", ["$nombre", "$nombre%"]);// Ordena por prioridad: 1) coincidencia exacta 2) coincidencia parcial y 3) productos que solo contienen la palabra
+    }
 
     $productos = $query->paginate(60);   //Paginacion de los resultados (si son muchos no funciona)
 
@@ -154,7 +156,6 @@ public function getTotalProductosComprados()
         ]);
 
     } catch (\Exception $e) {
-        \Log::error('Error en getTotalProductosComprados: ' . $e->getMessage());
         return response()->json([
             'message' => 'Error al obtener productos comprados',
             'error' => $e->getMessage()
