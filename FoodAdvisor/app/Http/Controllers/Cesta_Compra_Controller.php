@@ -76,18 +76,23 @@ class Cesta_Compra_Controller extends Controller
 
     //Revisar que se valide el ID_user que exista. Sol: required ya busca que la foreign key exista. No hay que cambiar
     public function store(Request $req) {
+        
+        $usuario = JWTAuth::parseToken()->authenticate();
+    
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 404);
+        }
+        
         $validator = Validator::make($req->all(), [
-            'ID_user' => 'required|integer|min:1',
             'fecha_compra' => 'required|date'
         ]);
 
         if ($validator->fails()) {
             return response()->json(['message' => 'Datos de entrada no válidos', 'errors' => $validator->errors()], 422);
         }
-        
 
         $cesta = Cesta_Compra::create([
-            'ID_user' => $req['ID_user'],
+            'ID_user' => $usuario->ID_user,
             'fecha_compra' => $req['fecha_compra'],
         ]);
 
