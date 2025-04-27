@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\Producto;
+use App\Models\Subcategoria;
+use App\Models\Subcategoriax2;
 use Illuminate\Support\Facades\Log;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+
 
 
 class Producto_Controller extends Controller
@@ -117,6 +120,19 @@ public function getAll()
         }
     }
 
+    if($request->has('id_sub_cat_2')) {
+        $query->where('ID_sub2',$request->id_sub_cat_2);
+    }
+    elseif($request->has('id_sub_cat')) {
+        $subcat2_ids = Subcategoriax2::where('ID_sub', $request->id_sub_cat)->pluck('ID_sub2'); // or whatever is the PK
+        $query->whereIn('ID_sub2', $subcat2_ids);
+    }
+    elseif($request->has('id_cat')) {
+        $subcat_ids = Subcategoria::where('ID_cat', $request->id_cat)->pluck('ID_sub');
+        $subcat2_ids = Subcategoriax2::whereIn('ID_sub', $subcat_ids)->pluck('ID_sub2');
+        $query->whereIn('ID_sub2', $subcat2_ids);
+    }
+
     //Filtro por nombre
     if ($request->has('nombre')) {
         $nombre = $request->nombre;
@@ -132,7 +148,13 @@ public function getAll()
 
     $productos = $query->paginate(60);   //Paginacion de los resultados (si son muchos no funciona)
 
-    return response()->json($productos, 200);
+    return response()->json([
+        'productos' => $productos->items(), // Devuelve solo los elementos de la página actual
+        'total_paginas' => $productos->lastPage(), // Devuelve el número total de páginas
+        'pagina_actual' => $productos->currentPage(), // Devuelve el número de la página actual
+        'total_elementos' => $productos->total(), // Devuelve el número total de elementos
+        'elementos_por_pagina' => $productos->perPage(), // Devuelve la cantidad de elementos por página
+    ], 200);
 }
 
 public function getTotalProductosComprados()
