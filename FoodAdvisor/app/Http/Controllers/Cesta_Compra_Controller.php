@@ -32,7 +32,9 @@ class Cesta_Compra_Controller extends Controller
             return response()->json(['error' => 'Usuario no autenticado'], 404);
         }
     
-        $cesta = Cesta_Compra::with('productos')
+        $cesta = Cesta_Compra::with(['productos' => function ($query) {
+            $query->orderBy('ID_prod');
+        }])
             ->where('ID_user', $usuario->ID_user)
             ->where('ID_cesta', $id)
             ->whereNull('deleted_at')
