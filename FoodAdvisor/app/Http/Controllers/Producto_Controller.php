@@ -135,16 +135,25 @@ public function getAll()
 
     //Filtro por nombre
     if ($request->has('nombre')) {
-        $nombre = $request->nombre;
+        $originalNombre = $request->nombre;
+        
+        // Reemplazar tildes y ñ por sus equivalentes planos
+        $nombre = strtr($originalNombre, [
+            'á' => 'a', 'é' => 'e', 'í' => 'i', 'ó' => 'o', 'ú' => 'u',
+            'Á' => 'A', 'É' => 'E', 'Í' => 'I', 'Ó' => 'O', 'Ú' => 'U',
+            'ñ' => 'n', 'Ñ' => 'N',
+        ]);
+    
         $query->where(function ($q) use ($nombre) {
-            $q->where('nombre', 'ILIKE', "$nombre%")
-              ->orWhere('nombre', 'ILIKE', "%$nombre%");
+            $q->whereRaw("translate(lower(nombre), 'áéíóúÁÉÍÓÚñÑ', 'aeiouaeiounn') ILIKE ?", ["$nombre%"])
+              ->orWhereRaw("translate(lower(nombre), 'áéíóúÁÉÍÓÚñÑ', 'aeiouaeiounn') ILIKE ?", ["%$nombre%"]);
         })
         ->orderByRaw("CASE 
-                WHEN nombre ILIKE ? THEN 1 
-                WHEN nombre ILIKE ? THEN 2 
-                ELSE 3 END", ["$nombre", "$nombre%"]);// Ordena por prioridad: 1) coincidencia exacta 2) coincidencia parcial y 3) productos que solo contienen la palabra
+                WHEN translate(lower(nombre), 'áéíóúÁÉÍÓÚñÑ', 'aeiouaeiounn') ILIKE ? THEN 1 
+                WHEN translate(lower(nombre), 'áéíóúÁÉÍÓÚñÑ', 'aeiouaeiounn') ILIKE ? THEN 2 
+                ELSE 3 END", ["$nombre", "$nombre%"]);
     }
+    
 
     $productos = $query->paginate(60);   //Paginacion de los resultados (si son muchos no funciona)
 
