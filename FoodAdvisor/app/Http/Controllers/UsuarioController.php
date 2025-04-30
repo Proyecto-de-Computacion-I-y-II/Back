@@ -111,6 +111,7 @@ class UsuarioController extends Controller
             'usuario' => [
                 'nombre' => $usuario->nombre,
                 'correo' => $usuario->correo,
+                'rol' => $usuario->rol,
             ],
             'token' => $token,
         ], 200);
