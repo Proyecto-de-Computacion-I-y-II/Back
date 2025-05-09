@@ -37,7 +37,6 @@ class Cesta_Compra_Controller extends Controller
         }])
             ->where('ID_user', $usuario->ID_user)
             ->where('ID_cesta', $id)
-            ->whereNull('deleted_at')
             ->first(); // Usamos first() en lugar de get() para obtener un solo objeto
     
         if (!$cesta) {
@@ -45,7 +44,6 @@ class Cesta_Compra_Controller extends Controller
         }
     
         $ultimaCestaId = Cesta_Compra::where('ID_user', $usuario->ID_user)
-            ->whereNull('deleted_at')
             ->orderByDesc('ID_cesta')
             ->value('ID_cesta'); // Obtenemos solo el ID de la última cesta
     
@@ -65,7 +63,6 @@ class Cesta_Compra_Controller extends Controller
         $cestaValidada = Cesta_Compra::with('productos')
         ->where('ID_user', $usuario->ID_user)
         ->where('ID_cesta', $cesta->ID_cesta)
-        ->whereNull('deleted_at')
         ->get();
 
         if(!$cestaValidada){
@@ -122,7 +119,6 @@ class Cesta_Compra_Controller extends Controller
 
         $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a su cesta suya propia más reciente (y no la de otro)
         ->where('ID_user', $usuario->ID_user)
-        ->whereNull('cesta_compra.deleted_at')
         ->orderByDesc('ID_cesta')
         ->first();
 
@@ -138,7 +134,6 @@ class Cesta_Compra_Controller extends Controller
 
         $pivot = $cestaValidada->productos()
         ->wherePivot('cesta_productos.ID_prod', $prod->ID_prod)
-        ->whereNull('cesta_productos.deleted_at')
         ->first();
 
         if($pivot) {
@@ -164,7 +159,6 @@ class Cesta_Compra_Controller extends Controller
 
         $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a su cesta suya propia más reciente (y no la de otro)
         ->where('ID_user', $usuario->ID_user)
-        ->whereNull('cesta_compra.deleted_at')
         ->orderByDesc('ID_cesta')
         ->first();
 
@@ -185,7 +179,6 @@ class Cesta_Compra_Controller extends Controller
 
         $pivotData = $cestaValidada->productos()
         ->wherePivot('cesta_productos.ID_prod', $prod->ID_prod)
-        ->whereNull('cesta_productos.deleted_at')
         ->first();
 
         if ($pivotData) {
@@ -230,7 +223,6 @@ class Cesta_Compra_Controller extends Controller
         $cestaValidada = Cesta_Compra::with('productos') //se asegura que está accediendo a una cesta suya propia (y no la de otro)
         ->where('ID_user', $usuario->ID_user)
         ->where('ID_cesta',$cesta->ID_cesta)
-        ->whereNull('cesta_compra.deleted_at')
         ->first();
 
         if(!$cestaValidada){
@@ -444,7 +436,6 @@ class Cesta_Compra_Controller extends Controller
     
         $cestaValidada = Cesta_Compra::with('productos')
             ->where('ID_user', $usuario->ID_user)
-            ->whereNull('cesta_compra.deleted_at')
             ->orderByDesc('ID_cesta')
             ->first();
     
@@ -460,7 +451,6 @@ class Cesta_Compra_Controller extends Controller
     
         $pivot = $cestaValidada->productos()
             ->wherePivot('ID_prod', $prod->ID_prod)
-            ->whereNull('cesta_productos.deleted_at')
             ->first();
     
         if ($pivot) {

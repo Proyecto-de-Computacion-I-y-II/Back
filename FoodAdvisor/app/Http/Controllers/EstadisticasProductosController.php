@@ -76,7 +76,6 @@ class EstadisticasProductosController extends Controller
                 ->join('cesta_productos', 'producto.ID_prod', '=', 'cesta_productos.ID_prod')
                 ->where('cesta_productos.ID_cesta', $cesta->ID_cesta)
                 ->where('cesta_productos.recomendado', false)
-                ->whereNull('producto.deleted_at')
                 ->select('nivel_piramide.idNivel', DB::raw('SUM(cesta_productos.cantidad) as total'))
                 ->groupBy('nivel_piramide.idNivel')
                 ->get();

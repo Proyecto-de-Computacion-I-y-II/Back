@@ -132,7 +132,6 @@ class UsuarioController extends Controller
         }
         
         $cestas = Cesta_Compra::where('ID_user', $usuario->ID_user)
-            ->whereNull('deleted_at')
             ->withCount('productos as totalProductoEnCestas')
             ->orderByDesc('ID_cesta')
             ->get();
