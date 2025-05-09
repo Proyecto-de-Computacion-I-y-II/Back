@@ -38,7 +38,7 @@ Route::middleware([JwtMiddleware::class])->group(function () {
 
 });
 
-
+Route::get('/admin/cesta/{id}', [Cesta_Compra_Controller::class, 'getByIdAdmin']);
 Route::get('productos', [Producto_Controller::class, 'getAll']); //Home
 Route::get('productos/valores-max', [Producto_Controller::class, 'getMaxValues']); //Home
 

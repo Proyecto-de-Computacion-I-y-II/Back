@@ -51,6 +51,30 @@ class Cesta_Compra_Controller extends Controller
     
         return response()->json(['cesta' => $cesta, 'ultima' => $esUltima], 200);
     }
+
+    public function getByIdAdmin($id)
+    {
+        $usuario = JWTAuth::parseToken()->authenticate();
+    
+        if (!$usuario || $usuario->rol !== 'admin') {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+    
+        $cesta = Cesta_Compra::with(['productos' => function ($query) {
+            $query->orderBy('ID_prod');
+        }])
+            ->where('ID_cesta', $id)
+            ->whereNull('deleted_at')
+            ->first();
+    
+        if (!$cesta) {
+            return response()->json(['error' => 'Cesta no encontrada'], 404);
+        }
+    
+        return response()->json(['cesta' => $cesta], 200);
+    }
+
+
     //Sobra, integrar en getById
     public function getProdFromCesta(Cesta_Compra $cesta)
     {
