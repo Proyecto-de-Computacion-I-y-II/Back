@@ -23,6 +23,7 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     Route::get('/usuario', [UsuarioController::class, 'getByToken']);
     Route::get('/usuario/cestas/{id}',[Cesta_Compra_Controller::class, 'getById']);
     Route::delete('/usuario/delete', [UsuarioController::class, 'deleteUser']);
+    
 
 
     Route::post('/cestas-compra/addProducto',[Cesta_Compra_Controller::class, 'storeInCesta']);
@@ -30,6 +31,8 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     Route::put('/cestas-compra/update-producto',[Cesta_Compra_Controller::class, 'updateProdFromCesta']);
     //Integrado en getById//Route::get('/cestas-compra/{cesta}/productos',[Cesta_Compra_Controller::class, 'getProdFromCesta']);
     Route::delete('/cestas-compra/{cesta}', [Cesta_Compra_Controller::class, 'deleteCesta']);
+    Route::post('/cestas/toggle-producto-comprado', [Cesta_Compra_Controller::class, 'toggleProductoComprado']);
+
 
 
     Route::get('/cestas/{cesta}/recomendar', [Cesta_Compra_Controller::class, 'recomendacion']);

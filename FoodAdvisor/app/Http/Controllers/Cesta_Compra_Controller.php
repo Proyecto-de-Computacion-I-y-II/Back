@@ -124,6 +124,52 @@ class Cesta_Compra_Controller extends Controller
         return response()->json($cesta, 201);
     }
 
+    public function toggleProductoComprado(Request $req)
+{
+    $usuario = JWTAuth::parseToken()->authenticate();
+    
+    if (!$usuario) {
+        return response()->json(['error' => 'Usuario no autenticado'], 401);
+    }
+
+    $validator = Validator::make($req->all(), [
+        'ID_cesta' => 'required|integer|exists:cesta_compra,ID_cesta',
+        'ID_prod' => 'required|integer|exists:producto,ID_prod',
+        'comprado' => 'required|boolean'
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['message' => 'Datos de entrada no válidos', 'errors' => $validator->errors()], 422);
+    }
+
+    // Verificar que la cesta pertenece al usuario autenticado
+    $cesta = Cesta_Compra::where('ID_user', $usuario->ID_user)
+        ->where('ID_cesta', $req->ID_cesta)
+        ->first();
+
+    if (!$cesta) {
+        return response()->json(['mensaje' => 'Error: No tienes acceso a esta cesta'], 403);
+    }
+
+    // Verificar que el producto está en la cesta
+    $productoEnCesta = $cesta->productos()
+        ->wherePivot('ID_prod', $req->ID_prod)
+        ->first();
+
+    if (!$productoEnCesta) {
+        return response()->json(['mensaje' => 'Error: Producto no encontrado en la cesta'], 404);
+    }
+
+    // Actualizar el estado "comprado" en la tabla pivot
+    $cesta->productos()->updateExistingPivot($req->ID_prod, ['comprado' => $req->comprado]);
+
+    return response()->json([
+        'mensaje' => 'Estado de compra actualizado correctamente',
+        'comprado' => $req->comprado
+    ], 200);
+}
+
+
     //Revisar la funcionalidad de que si extiste añadir cantidad o devolver error de que el producto ya existe en canasta
     public function storeInCesta(Request $req) {
         $usuario = JWTAuth::parseToken()->authenticate();
