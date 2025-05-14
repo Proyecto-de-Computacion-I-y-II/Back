@@ -25,7 +25,7 @@ class Cesta_Compra extends Model
     public function productos()
     {
         return $this->belongsToMany(Producto::class, 'cesta_productos', 'ID_cesta', 'ID_prod')
-            ->withPivot('cantidad');
+            ->withPivot('cantidad', 'comprado');
     }
 
     public function porcentajes()
