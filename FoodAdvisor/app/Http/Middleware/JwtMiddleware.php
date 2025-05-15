@@ -20,12 +20,6 @@ class JwtMiddleware extends BaseMiddleware
             // Parse the token and authenticate the user
             $user = JWTAuth::parseToken()->authenticate();
 
-            // Verificar si el usuario tiene rol de administrador
-            if (!$user || $user->rol !== 'admin') {
-                Log::warning('Acceso denegado: Usuario no es administrador', ['user_id' => $user ? $user->id : null]);
-                return response()->json(['message' => 'No tienes permisos de administrador'], 403);
-            }
-
         } catch (Exception $e) {
             // Log the error details
             Log::error('JWT Error: ' . $e->getMessage());
