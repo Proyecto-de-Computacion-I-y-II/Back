@@ -48,6 +48,9 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     Route::get('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'show']);
     Route::put('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'update']);
     Route::delete('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'destroy']);
+    Route::get('/configuracion/productos-pagina', [Configuracion_Controller::class, 'getProductosPagina']);
+    Route::get('/configuracion/color-fondo', [Configuracion_Controller::class, 'getColorFondo']);   
+
 
 });
 
