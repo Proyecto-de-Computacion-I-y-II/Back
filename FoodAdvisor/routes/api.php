@@ -38,6 +38,16 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     Route::get('/cestas/{cesta}/recomendar', [Cesta_Compra_Controller::class, 'recomendacion']);
     
     Route::get('/usuario/productos-totales', [Producto_Controller::class, 'getTotalProductosComprados']);
+        // Ruta para actualizar el número de productos por página
+    Route::put('/configuraciones/productos-pagina', [Configuracion_Controller::class, 'updateProductosPagina']);
+    
+    // Ruta para actualizar el color de fondo
+    Route::put('/configuraciones/color-fondo', [Configuracion_Controller::class, 'updateColorFondo']);
+    Route::get('/configuraciones', [Configuracion_Controller::class, 'index']);
+    Route::post('/configuraciones', [Configuracion_Controller::class, 'store']);
+    Route::get('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'show']);
+    Route::put('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'update']);
+    Route::delete('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'destroy']);
 
 });
 
