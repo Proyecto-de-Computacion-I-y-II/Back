@@ -10,6 +10,7 @@ use App\Http\Controllers\Producto_Controller;
 use App\Http\Controllers\NivelPiramide_Controller;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\EstadisticasProductosController;
+use App\Http\Controllers\Configuracion_Controller;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
