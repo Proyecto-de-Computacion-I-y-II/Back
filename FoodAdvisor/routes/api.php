@@ -42,21 +42,19 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     // Ruta para actualizar el número de productos por página
     Route::put('/configuraciones/productos-pagina', [Configuracion_Controller::class, 'updateProductosPagina']);
 
-    // Ruta para actualizar el color de fondo
-    Route::put('/configuraciones/color-fondo', [Configuracion_Controller::class, 'updateColorFondo']);
+    // Ruta para actualizar el color de header y productos por pagina
+    Route::put('/configuraciones/color-header', [Configuracion_Controller::class, 'updateColorHeader']);
     Route::get('/configuraciones', [Configuracion_Controller::class, 'index']);
     Route::post('/configuraciones', [Configuracion_Controller::class, 'store']);
     Route::get('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'show']);
     Route::put('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'update']);
     Route::delete('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'destroy']);
     Route::get('/configuracion/productos-pagina', [Configuracion_Controller::class, 'getProductosPagina']);
-    Route::get('/configuracion/color-fondo', [Configuracion_Controller::class, 'getColorFondo']);
-
+    Route::get('/configuracion/color-header', [Configuracion_Controller::class, 'getColorHeader']);
 
     //Estadisticas
     Route::get('/estadisticas/productos', [EstadisticasProductosController::class, 'obtenerEstadisticas']);
     Route::get('/estadisticas/compras', [EstadisticasProductosController::class, 'obtenerEstadisticasCestas']);
-
 
 });
 

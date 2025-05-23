@@ -113,11 +113,11 @@ class Configuracion_Controller extends Controller
     }
 
     /**
-     * Obtener la configuración de color de fondo.
+     * Obtener la configuración de color de header.
      */
-    public function getColorFondo()
+    public function getColorHeader()
     {
-        $configuracion = Configuracion::where('nombre', 'color_fondo')->first();
+        $configuracion = Configuracion::where('nombre', 'color_header')->first();
 
         if (!$configuracion) {
             return response()->json(['error' => 'Configuración no encontrada'], 404);
@@ -164,9 +164,9 @@ class Configuracion_Controller extends Controller
     }
 
     /**
-     * Actualizar el color de fondo de la aplicación.
+     * Actualizar el color de header de la aplicación.
      */
-    public function updateColorFondo(Request $request)
+    public function updateColorHeader(Request $request)
     {
         // Autenticar al usuario
         $usuario = JWTAuth::parseToken()->authenticate();
@@ -184,7 +184,7 @@ class Configuracion_Controller extends Controller
             'valor' => 'required|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
         ]);
 
-        $configuracion = Configuracion::where('nombre', 'color_fondo')->first();
+        $configuracion = Configuracion::where('nombre', 'color_header')->first();
 
         if (!$configuracion) {
             return response()->json(['error' => 'Configuración no encontrada'], 404);
@@ -193,7 +193,7 @@ class Configuracion_Controller extends Controller
         $configuracion->valor = $request->valor;
         $configuracion->save();
 
-        return response()->json(['success' => 'Color de fondo actualizado correctamente'], 200);
+        return response()->json(['success' => 'Color de header actualizado correctamente'], 200);
     }
 
     /**
