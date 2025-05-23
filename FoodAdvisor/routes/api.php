@@ -19,17 +19,17 @@ use App\Http\Middleware\JwtMiddleware;
 
 
 Route::middleware([JwtMiddleware::class])->group(function () {
-    
+
     Route::get('/usuario/cestas', [UsuarioController::class, 'getCestasUsuario']); //Info Especifica Producto, lista de cestas
     Route::get('/usuario', [UsuarioController::class, 'getByToken']);
-    Route::get('/usuario/cestas/{id}',[Cesta_Compra_Controller::class, 'getById']);
+    Route::get('/usuario/cestas/{id}', [Cesta_Compra_Controller::class, 'getById']);
     Route::delete('/usuario/delete', [UsuarioController::class, 'deleteUser']);
-    
 
 
-    Route::post('/cestas-compra/addProducto',[Cesta_Compra_Controller::class, 'storeInCesta']);
+
+    Route::post('/cestas-compra/addProducto', [Cesta_Compra_Controller::class, 'storeInCesta']);
     Route::post('/cestas/recomendados', [Cesta_Compra_Controller::class, 'storeRecommendedInCesta']);
-    Route::put('/cestas-compra/update-producto',[Cesta_Compra_Controller::class, 'updateProdFromCesta']);
+    Route::put('/cestas-compra/update-producto', [Cesta_Compra_Controller::class, 'updateProdFromCesta']);
     //Integrado en getById//Route::get('/cestas-compra/{cesta}/productos',[Cesta_Compra_Controller::class, 'getProdFromCesta']);
     Route::delete('/cestas-compra/{cesta}', [Cesta_Compra_Controller::class, 'deleteCesta']);
     Route::post('/cestas/toggle-producto-comprado', [Cesta_Compra_Controller::class, 'toggleProductoComprado']);
@@ -37,11 +37,11 @@ Route::middleware([JwtMiddleware::class])->group(function () {
 
 
     Route::get('/cestas/{cesta}/recomendar', [Cesta_Compra_Controller::class, 'recomendacion']);
-    
+
     Route::get('/usuario/productos-totales', [Producto_Controller::class, 'getTotalProductosComprados']);
-        // Ruta para actualizar el número de productos por página
+    // Ruta para actualizar el número de productos por página
     Route::put('/configuraciones/productos-pagina', [Configuracion_Controller::class, 'updateProductosPagina']);
-    
+
     // Ruta para actualizar el color de fondo
     Route::put('/configuraciones/color-fondo', [Configuracion_Controller::class, 'updateColorFondo']);
     Route::get('/configuraciones', [Configuracion_Controller::class, 'index']);
@@ -50,7 +50,12 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     Route::put('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'update']);
     Route::delete('/configuraciones/{configuracion}', [Configuracion_Controller::class, 'destroy']);
     Route::get('/configuracion/productos-pagina', [Configuracion_Controller::class, 'getProductosPagina']);
-    Route::get('/configuracion/color-fondo', [Configuracion_Controller::class, 'getColorFondo']);   
+    Route::get('/configuracion/color-fondo', [Configuracion_Controller::class, 'getColorFondo']);
+
+
+    //Estadisticas
+    Route::get('/estadisticas/productos', [EstadisticasProductosController::class, 'obtenerEstadisticas']);
+    Route::get('/estadisticas/compras', [EstadisticasProductosController::class, 'obtenerEstadisticasCestas']);
 
 
 });
@@ -66,7 +71,7 @@ Route::post('productos/filtrar', [Producto_Controller::class, 'filtrarProductos'
 Route::post('productos', [Producto_Controller::class, 'postProducto']); //no comprobado
 
 
-Route::get('/cestas-compra',[Cesta_Compra_Controller::class, 'getAll']);
+Route::get('/cestas-compra', [Cesta_Compra_Controller::class, 'getAll']);
 Route::post('/cestas-compra', [Cesta_Compra_Controller::class, 'store']);
 Route::put('/cestas-compra/{id}', [Cesta_Compra_Controller::class, 'updateCesta']); //Editar Cesta
 Route::delete('/cestas-compra/{cesta}/delete-producto/{id}', [Cesta_Compra_Controller::class, 'removeProductoFromCesta']);
@@ -97,9 +102,7 @@ Route::post('/usuario/login', [UsuarioController::class, 'login']);
 Route::get('/usuario/login/{id}', [UsuarioController::class, 'getUser']);
 
 
-//Estadisticas
-Route::get('/estadisticas/productos', [EstadisticasProductosController::class, 'obtenerEstadisticas']);
-Route::get('/estadisticas/compras', [EstadisticasProductosController::class, 'obtenerEstadisticasCestas']);
+
 
 //Recomendar productos
 

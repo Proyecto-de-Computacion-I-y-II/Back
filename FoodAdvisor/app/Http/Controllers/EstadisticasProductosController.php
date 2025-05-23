@@ -9,10 +9,25 @@ use App\Models\Producto;
 use App\Models\Porcentaje;
 use App\Models\NivelPiramide;
 
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
+
 class EstadisticasProductosController extends Controller
 {
     public function obtenerEstadisticas(Request $request)
     {
+
+        // Autenticar al usuario
+        $usuario = JWTAuth::parseToken()->authenticate();
+
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        // Verificar que el usuario tiene rol de administrador
+        if ($usuario->rol !== 'admin') {
+            return response()->json(['error' => 'No tienes permisos para realizar esta acción'], 403);
+        }
+
         // Obtener la cantidad de veces que aparece cada producto en la tabla Cesta_Productos
         $productosVendidos = DB::table('cesta_productos')
             ->select('ID_prod', 'cantidad')
@@ -41,6 +56,18 @@ class EstadisticasProductosController extends Controller
 
     public function obtenerEstadisticasCestas(Request $request)
     {
+
+        // Autenticar al usuario
+        $usuario = JWTAuth::parseToken()->authenticate();
+
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
+        }
+
+        // Verificar que el usuario tiene rol de administrador
+        if ($usuario->rol !== 'admin') {
+            return response()->json(['error' => 'No tienes permisos para realizar esta acción'], 403);
+        }
         // Calcular la media de los porcentajes por nivel de pirámide antes de las recomendaciones
         $mediasPorNivelNoRecomendado = $this->calcularMediasPorNivelNoRecomendado();
         $mediasPornivel = $this->calcularMediasPorNivel();
