@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  app:
+    build:
+      context: ./FoodAdvisor
+    container_name: laravel_app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ".FoodAdvisor:/var/www"
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: foodadvisor
+      DB_USERNAME: root
+      DB_PASSWORD: admin123
+    networks:
+      - foodadvisor_net
+
+networks:
+  foodadvisor_net:
+    external: true

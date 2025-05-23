@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  frontend:
+    build:
+      context: ../Front/FoodAdvisorF
+    container_name: angular_frontend
+    ports:
+      - "4200:4200"
+    networks:
+      - foodadvisor_net
+
+networks:
+  foodadvisor_net:
+    external: true
