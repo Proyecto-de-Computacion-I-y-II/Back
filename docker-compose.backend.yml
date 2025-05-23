@@ -10,7 +10,7 @@ services:
       - ".FoodAdvisor:/var/www"
     environment:
       DB_CONNECTION: pgsql
-      DB_HOST: db
+      DB_HOST: 35.169.107.240
       DB_PORT: 5432
       DB_DATABASE: foodadvisor
       DB_USERNAME: root
