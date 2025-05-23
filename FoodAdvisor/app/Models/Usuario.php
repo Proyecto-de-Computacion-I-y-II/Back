@@ -12,7 +12,7 @@ class Usuario extends Authenticatable implements JWTSubject
     
     protected $table = 'usuario';
     protected $primaryKey = 'ID_user';
-    protected $fillable = ['nombre', 'apellidos', 'correo', 'contrasenia','rol'];
+    protected $fillable = ['nombre', 'apellidos', 'correo', 'contrasenia','rol', 'codigo_verificacion'];
     
     public function cestas()
     {
