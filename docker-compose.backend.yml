@@ -5,8 +5,6 @@ services:
     container_name: laravel_app
     ports:
       - "8000:8000"
-    volumes:
-      - "./FoodAdvisor:/var/www"
     environment:
       DB_CONNECTION: pgsql
       DB_HOST: 35.169.107.240
