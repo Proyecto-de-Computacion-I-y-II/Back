@@ -5,3 +5,7 @@ services:
     container_name: laravel_app
     ports:
       - "8000:8000"
+    environment:
+      DB_HOST: 35.169.107.240
+      DB_PORT: 5432
+      DB_USERNAME: root
