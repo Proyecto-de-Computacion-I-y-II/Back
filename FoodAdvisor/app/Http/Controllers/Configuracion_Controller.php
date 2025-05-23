@@ -107,6 +107,11 @@ class Configuracion_Controller extends Controller
         ]);
     }
 
+    public function getNumProductosPagina(){
+        $configuracion = Configuracion::where('nombre', 'productos_pagina')->first();
+        return $configuracion->valor;
+    }
+
     /**
      * Obtener la configuración de color de fondo.
      */

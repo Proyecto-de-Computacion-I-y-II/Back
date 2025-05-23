@@ -10,13 +10,19 @@ use App\Models\Subcategoriax2;
 use Illuminate\Support\Facades\Log;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
+use App\Http\Controllers\Configuracion_Controller;
+
 
 
 class Producto_Controller extends Controller
 {
 public function getAll()
 {
-    $productos = Producto::paginate(60);
+    $controller = new Configuracion_Controller();
+    $cantidad_productos = $controller->getNumProductosPagina();
+    
+
+    $productos = Producto::paginate($cantidad_productos);
 
     return response()->json([
         'productos' => $productos->items(), // Devuelve solo los elementos de la página actual
@@ -155,7 +161,11 @@ public function getAll()
     }
     
 
-    $productos = $query->paginate(60);   //Paginacion de los resultados (si son muchos no funciona)
+    $controller = new Configuracion_Controller();
+    $cantidad_productos = $controller->getNumProductosPagina();
+    
+
+    $productos = Producto::paginate($cantidad_productos);
 
     return response()->json([
         'productos' => $productos->items(), // Devuelve solo los elementos de la página actual
