@@ -55,7 +55,12 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     //Estadisticas
     Route::get('/estadisticas/productos', [EstadisticasProductosController::class, 'obtenerEstadisticas']);
     Route::get('/estadisticas/compras', [EstadisticasProductosController::class, 'obtenerEstadisticasCestas']);
-
+    Route::get('/estadisticas/supers-mas-populares', [EstadisticasProductosController::class, 'supermercadosMasComprados']);
+    Route::get('/estadisticas/productos-mas-vendidos-por-super', [EstadisticasProductosController::class, 'prodMasCompradosPorSupermercado']);
+    Route::get('/estadisticas/productos-mas-vendidos-por-piramide', [EstadisticasProductosController::class, 'productosMasCompradosPorPiramide']);
+    Route::get('/estadisticas/supermercados-mas-equilibrados', [EstadisticasProductosController::class, 'obtenerSuperMasEquilibrado']);
+    Route::get('/estadisticas/porcentaje-productos-recomendados-promedio', [EstadisticasProductosController::class, 'procentajeProductosRecomendadosPromedio']);
+    Route::get('/estadisticas/coste-adicional-equilibrarse', [EstadisticasProductosController::class, 'calcularCosteAdicionalPorEquilibrarse']);
 });
 
 Route::get('/admin/cesta/{id}', [Cesta_Compra_Controller::class, 'getByIdAdmin']);

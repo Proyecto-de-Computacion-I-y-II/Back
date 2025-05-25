@@ -95,6 +95,8 @@ public function getAll()
     {
         $query = Producto::query();
 
+        Log::info('Request data: ', $request->all());
+
     // Filtro por precio
     if ($request->has('precio_min')) {
         $query->where('precio', '>=', $request->precio_min);
@@ -163,9 +165,8 @@ public function getAll()
 
     $controller = new Configuracion_Controller();
     $cantidad_productos = $controller->getNumProductosPagina();
-    
 
-    $productos = Producto::paginate($cantidad_productos);
+    $productos = $query->paginate($cantidad_productos);
 
     return response()->json([
         'productos' => $productos->items(), // Devuelve solo los elementos de la página actual
