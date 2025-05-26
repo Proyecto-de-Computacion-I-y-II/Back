@@ -33,7 +33,7 @@ Route::middleware([JwtMiddleware::class])->group(function () {
     //Integrado en getById//Route::get('/cestas-compra/{cesta}/productos',[Cesta_Compra_Controller::class, 'getProdFromCesta']);
     Route::delete('/cestas-compra/{cesta}', [Cesta_Compra_Controller::class, 'deleteCesta']);
     Route::post('/cestas/toggle-producto-comprado', [Cesta_Compra_Controller::class, 'toggleProductoComprado']);
-
+    Route::delete('/cestas-compra/delete-producto/{id}', [Cesta_Compra_Controller::class, 'removeProductoFromCesta']);
 
 
     Route::get('/cestas/{cesta}/recomendar', [Cesta_Compra_Controller::class, 'recomendacion']);
@@ -77,7 +77,7 @@ Route::post('productos', [Producto_Controller::class, 'postProducto']); //no com
 Route::get('/cestas-compra', [Cesta_Compra_Controller::class, 'getAll']);
 Route::post('/cestas-compra', [Cesta_Compra_Controller::class, 'store']);
 Route::put('/cestas-compra/{id}', [Cesta_Compra_Controller::class, 'updateCesta']); //Editar Cesta
-Route::delete('/cestas-compra/{cesta}/delete-producto/{id}', [Cesta_Compra_Controller::class, 'removeProductoFromCesta']);
+
 Route::middleware(['auth:sanctum'])->get('/compras/historial', [Cesta_Compra_Controller::class, 'getHistorialCompras']);
 
 Route::get('/supermercados', [Supermercado_Controller::class, 'getAll']);

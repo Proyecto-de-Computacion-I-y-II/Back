@@ -304,20 +304,49 @@ class Cesta_Compra_Controller extends Controller
         return response()->json(['mensaje' => 'Cesta eliminada correctamente'], 200);
     }
 
-    public function removeProductoFromCesta(Cesta_Compra $cesta, $productoId) {
-        if (!$cesta) {
-            return response()->json(['mensaje' => 'Error: Cesta no encontrada'], 404);
+    /**
+     * Elimina un producto de la última cesta de compra del usuario autenticado.
+     *
+     * @param int $idProducto El ID del producto a eliminar.
+     * @return JsonResponse
+     */
+    public function removeProductoFromCesta(int $idProducto): JsonResponse
+    {
+        $usuario = JWTAuth::parseToken()->authenticate();
+
+        if (!$usuario) {
+            return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        $productInCesta = $cesta->productos()->wherePivot('ID_prod', $productoId)->first();
+        // Obtener la última cesta del usuario
+        $ultimaCesta = Cesta_Compra::where('ID_user', $usuario->ID_user)
+            ->orderByDesc('ID_cesta')
+            ->first();
 
-        if (!$productInCesta) {
-            return response()->json(['mensaje' => 'Error: Producto no encontrado en la cesta'], 404);
+        if (!$ultimaCesta) {
+            return response()->json(['mensaje' => 'Error: No se encontró una cesta para este usuario.'], 404);
         }
 
-        $cesta->productos()->detach($productoId);
+        // Validar que el producto exista en la base de datos
+        $producto = Producto::find($idProducto);
+        if (!$producto) {
+            return response()->json(['mensaje' => 'Error: El producto no existe.'], 404);
+        }
 
-        return response()->json(['mensaje' => 'producto eliminado correctamente de la cesta'], 200);
+        // Comprobar si el producto está en la última cesta del usuario
+        $productoEnCesta = $ultimaCesta->productos()->wherePivot('ID_prod', $idProducto)->first();
+
+        if (!$productoEnCesta) {
+            return response()->json(['mensaje' => 'Error: El producto no se encontró en tu última cesta.'], 404);
+        }
+
+        // Eliminar el producto de la cesta
+        $ultimaCesta->productos()->detach($idProducto);
+
+        // Recalcular los porcentajes de la cesta
+        $ultimaCesta->calcularPorcentajes();
+
+        return response()->json(['mensaje' => 'Producto eliminado correctamente de la cesta.'], 200);
     }
 
     //Revisar si se queda
