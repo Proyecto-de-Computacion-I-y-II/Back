@@ -11,15 +11,13 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class UsuarioController extends Controller
 {
-    public function getRol($id)
+    public function getRol(Usuario $user)
     {
-        $usuario = Usuario::find($id);
-    
-        if (!$usuario) {
+        if (!$user) {
             return response()->json(['error' => 'usuario no encontrado'], 404);
         }
     
-        return response()->json(['rol' => $usuario->rol], 200);
+        return response()->json(['rol' => $user->rol], 200);
     }
 
     public function getByToken()
