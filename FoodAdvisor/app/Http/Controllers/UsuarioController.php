@@ -83,9 +83,17 @@ class UsuarioController extends Controller
             'rol' => $validatedData['rol'],
         ]);
 
+        $token = JWTAuth::fromUser($usuario);
+
+
         return response()->json([
             'mensaje' => 'usuario registrado correctamente',
-            'usuario' => $usuario
+            'usuario' => [
+                'nombre' => $usuario->nombre,
+                'correo' => $usuario->correo,
+                'rol' => $usuario->rol,
+            ],
+            'token' => $token,
         ], 201);
     }
 
