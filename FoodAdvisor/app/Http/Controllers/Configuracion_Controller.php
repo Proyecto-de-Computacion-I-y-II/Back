@@ -5,66 +5,48 @@ namespace App\Http\Controllers;
 use App\Models\Configuracion;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class Configuracion_Controller extends Controller
 {
-    /**
-     * Mostrar un listado de todas las configuraciones.
-     */
     public function index()
     {
-        $configuraciones = Configuracion::all();
-        return view('configuraciones.index', compact('configuraciones'));
+        return response()->json(Configuracion::all());
     }
 
-    /**
-     * Mostrar el formulario para crear una nueva configuración.
-     */
     public function create()
     {
-        return view('configuraciones.create');
+        return response()->json(['message' => 'Formulario no disponible en API.']);
     }
 
-    /**
-     * Almacenar una nueva configuración en la base de datos.
-     */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre' => 'required|string|unique:configuracion,nombre',
             'valor' => 'nullable|string',
         ]);
 
-        Configuracion::create($request->all());
+        $config = Configuracion::create($validated);
 
-        return redirect()->route('configuraciones.index')
-            ->with('success', 'Configuración creada exitosamente.');
+        return response()->json([
+            'message' => 'Configuración creada exitosamente.',
+            'data' => $config
+        ], 201);
     }
 
-    /**
-     * Mostrar una configuración específica.
-     */
     public function show(Configuracion $configuracion)
     {
-        return view('configuraciones.show', compact('configuracion'));
+        return response()->json($configuracion);
     }
 
-    /**
-     * Mostrar el formulario para editar una configuración.
-     */
     public function edit(Configuracion $configuracion)
     {
-        return view('configuraciones.edit', compact('configuracion'));
+        return response()->json(['message' => 'Formulario no disponible en API.']);
     }
 
-    /**
-     * Actualizar una configuración específica en la base de datos.
-     */
     public function update(Request $request, Configuracion $configuracion)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nombre' => [
                 'required',
                 'string',
@@ -73,26 +55,21 @@ class Configuracion_Controller extends Controller
             'valor' => 'nullable|string',
         ]);
 
-        $configuracion->update($request->all());
+        $configuracion->update($validated);
 
-        return redirect()->route('configuraciones.index')
-            ->with('success', 'Configuración actualizada exitosamente.');
+        return response()->json([
+            'message' => 'Configuración actualizada exitosamente.',
+            'data' => $configuracion
+        ]);
     }
 
-    /**
-     * Eliminar una configuración específica de la base de datos.
-     */
     public function destroy(Configuracion $configuracion)
     {
         $configuracion->delete();
 
-        return redirect()->route('configuraciones.index')
-            ->with('success', 'Configuración eliminada exitosamente.');
+        return response()->json(['message' => 'Configuración eliminada exitosamente.']);
     }
 
-    /**
-     * Obtener la configuración de productos por página.
-     */
     public function getProductosPagina()
     {
         $configuracion = Configuracion::where('nombre', 'productos_pagina')->first();
@@ -107,14 +84,12 @@ class Configuracion_Controller extends Controller
         ]);
     }
 
-    public function getNumProductosPagina(){
-        $configuracion = Configuracion::where('nombre', 'productos_pagina')->first();
-        return $configuracion->valor;
+    public function getNumProductosPagina()
+    {
+        $valor = Configuracion::where('nombre', 'productos_pagina')->value('valor');
+        return response()->json(['valor' => $valor]);
     }
 
-    /**
-     * Obtener la configuración de color de header.
-     */
     public function getColorHeader()
     {
         $configuracion = Configuracion::where('nombre', 'color_header')->first();
@@ -129,20 +104,14 @@ class Configuracion_Controller extends Controller
         ]);
     }
 
-
-    /**
-     * Actualizar el número de productos por página.
-     */
     public function updateProductosPagina(Request $request)
     {
-        // Autenticar al usuario
         $usuario = JWTAuth::parseToken()->authenticate();
 
         if (!$usuario) {
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Verificar que el usuario tiene rol de administrador
         if ($usuario->rol !== 'admin') {
             return response()->json(['error' => 'No tienes permisos para realizar esta acción'], 403);
         }
@@ -160,22 +129,17 @@ class Configuracion_Controller extends Controller
         $configuracion->valor = $request->valor;
         $configuracion->save();
 
-        return response()->json(['success' => 'Número de productos por página actualizado correctamente'], 200);
+        return response()->json(['success' => 'Número de productos por página actualizado correctamente']);
     }
 
-    /**
-     * Actualizar el color de header de la aplicación.
-     */
     public function updateColorHeader(Request $request)
     {
-        // Autenticar al usuario
         $usuario = JWTAuth::parseToken()->authenticate();
 
         if (!$usuario) {
             return response()->json(['error' => 'Usuario no autenticado'], 401);
         }
 
-        // Verificar que el usuario tiene rol de administrador
         if ($usuario->rol !== 'admin') {
             return response()->json(['error' => 'No tienes permisos para realizar esta acción'], 403);
         }
@@ -193,15 +157,12 @@ class Configuracion_Controller extends Controller
         $configuracion->valor = $request->valor;
         $configuracion->save();
 
-        return response()->json(['success' => 'Color de header actualizado correctamente'], 200);
+        return response()->json(['success' => 'Color de header actualizado correctamente']);
     }
 
-    /**
-     * Obtener configuraciones para el frontend.
-     */
     public function getConfiguraciones()
     {
-        $configuraciones = Configuracion::all()->pluck('valor', 'nombre');
+        $configuraciones = Configuracion::all();
         return response()->json($configuraciones);
     }
 }
