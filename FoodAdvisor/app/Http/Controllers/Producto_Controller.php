@@ -19,10 +19,10 @@ class Producto_Controller extends Controller
 public function getAll()
 {
     $controller = new Configuracion_Controller();
-    $cantidad_productos = $controller->getNumProductosPagina();
+    $cantidad_productos = $controller->getNumProductosPagina()->getData();
     
 
-    $productos = Producto::paginate($cantidad_productos);
+    $productos = Producto::paginate($cantidad_productos->valor);
 
     return response()->json([
         'productos' => $productos->items(), // Devuelve solo los elementos de la página actual
