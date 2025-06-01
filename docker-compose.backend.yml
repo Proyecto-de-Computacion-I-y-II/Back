@@ -6,6 +6,17 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DB_HOST: 35.169.107.240
+      DB_HOST: db
       DB_PORT: 5432
       DB_USERNAME: root
+      DB_PASSWORD: admin123
+      DB_DATABASE: foodadvisor
+      APP_ENV: local
+      APP_DEBUG: true
+
+    networks:
+      - foodadvisor_net
+
+networks:
+  foodadvisor_net:
+    external: true

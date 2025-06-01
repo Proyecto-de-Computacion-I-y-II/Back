@@ -1,7 +1,0 @@
-services:
-  frontend:
-    build:
-      context: ../Front/FoodAdvisorF
-    container_name: angular_frontend
-    ports:
-      - "4200:4200"
